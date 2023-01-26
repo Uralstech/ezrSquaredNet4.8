@@ -1557,7 +1557,7 @@ namespace ezrSquared.Values
             else if (startAsInt > endAsInt)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Start cannot be greater than end", context));
 
-            return result.success(new array(((item[])storedValue).Skip(startAsInt).Take(startAsInt - endAsInt).ToArray()));
+            return result.success(new array(((item[])storedValue).Skip(startAsInt).Take(endAsInt).ToArray()));
         }
 
         private runtimeResult asBoolean(context context, position[] positions)

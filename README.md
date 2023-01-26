@@ -10,5 +10,8 @@ to be used in other programs. Check out ezr² [here](https://github.com/Uralstech
 ### Released
 **Check the [GitHub Commits](https://github.com/Uralstech/ezrSquaredNet4.8/commits) for all changes in source code**
 
+* **prerelease-1.0.0.0.1** - [26-01-23]
+    * Fixed array slicing
+
 * **prerelease-1.0.0.0.0** - [26-01-23]
     * Initial release!
