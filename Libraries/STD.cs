@@ -3,6 +3,7 @@ using ezrSquared.Helpers;
 using ezrSquared.Errors;
 using ezrSquared.General;
 using static ezrSquared.Constants.constants;
+using System;
 
 namespace ezrSquared.Libraries.STD
 {
@@ -38,11 +39,11 @@ namespace ezrSquared.Libraries.STD
             internalContext.symbolTable.set("nan", new @float(float.NaN));
             internalContext.symbolTable.set("infinity", new @float(float.PositiveInfinity));
             internalContext.symbolTable.set("negative_infinity", new @float(float.NegativeInfinity));
-            internalContext.symbolTable.set("negative_zero", new @float(float.NegativeZero));
-            internalContext.symbolTable.set("pi", new @float(MathF.PI));
-            internalContext.symbolTable.set("tau", new @float(MathF.Tau));
-            internalContext.symbolTable.set("e", new @float(MathF.E));
-            
+            //internalContext.symbolTable.set("negative_zero", new @float(float.NegativeZero));
+            internalContext.symbolTable.set("pi", new @float((float)Math.PI));
+            //internalContext.symbolTable.set("tau", new @float((float)Math.Tau));
+            internalContext.symbolTable.set("e", new @float((float)Math.E));
+
 
             return new runtimeResult().success(new @object(name, internalContext).setPosition(startPos, endPos).setContext(context));
         }

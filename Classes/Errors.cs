@@ -1,4 +1,5 @@
 ﻿using ezrSquared.General;
+using System;
 
 namespace ezrSquared.Errors
 {
@@ -21,11 +22,11 @@ namespace ezrSquared.Errors
 
         internal string stringWithUnderline(string text, position startPos, position endPos)
         {
-            int start = Math.Max(text[0..((startPos.index <= text.Length) ? startPos.index : text.Length)].LastIndexOf('\n'), 0);
+            int start = Math.Max(text.Substring(0, ((startPos.index <= text.Length) ? startPos.index : text.Length)).LastIndexOf('\n'), 0);
             int end = text.IndexOf('\n', start + 1);
             if (end == -1) end = text.Length;
 
-            string result = text[start..end] + '\n';
+            string result = text.Substring(start, end) + '\n';
             for (int i = 0; i < startPos.column; i++)
                 result += ' ';
             for (int i = 0; i < endPos.column - startPos.column; i++)

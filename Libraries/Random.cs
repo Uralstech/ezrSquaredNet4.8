@@ -40,7 +40,7 @@ namespace ezrSquared.Libraries.Random
             return result.success(new integer(random_.Next(min, max)));
         }
 
-        private runtimeResult randomNumberFloat(context context, position[] positions) { return new runtimeResult().success(new @float(random_.NextSingle())); }
+        private runtimeResult randomNumberFloat(context context, position[] positions) { return new runtimeResult().success(new @float((float)random_.NextDouble())); }
 
         public override item copy() { return new random().setPosition(startPos, endPos).setContext(context); }
 

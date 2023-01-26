@@ -3,6 +3,8 @@ using ezrSquared.Helpers;
 using ezrSquared.Errors;
 using ezrSquared.General;
 using static ezrSquared.Constants.constants;
+using System.IO;
+using System;
 
 namespace ezrSquared.Libraries.IO
 {
@@ -327,7 +329,7 @@ namespace ezrSquared.Libraries.IO
                 subDirectoriesAsString[i] = new @string(subDirectories[i]).setPosition(positions[0], positions[1]).setContext(context);
             return result.success(new array(subDirectoriesAsString));
         }
-        
+
         private runtimeResult filesInFolder(context context, position[] positions)
         {
             runtimeResult result = new runtimeResult();
@@ -535,9 +537,9 @@ namespace ezrSquared.Libraries.IO
             internalContext.symbolTable.set("get_root", new predefined_function("path_get_root", pathRoot, new string[1] { "path" }));
             internalContext.symbolTable.set("create_temp_file", new predefined_function("path_create_temp_file", createTempFilePath, new string[0]));
             internalContext.symbolTable.set("temp", new predefined_function("path_temp", tempPath, new string[0]));
-            internalContext.symbolTable.set("relative_path", new predefined_function("path_relative_path", relativePath, new string[2] { "relative_to", "path" }));
-            internalContext.symbolTable.set("ends_in_folder_seperator", new predefined_function("path_ends_in_folder_seperator", pathEndsInFolderSeperator, new string[1] { "path" }));
-            internalContext.symbolTable.set("remove_last_folder_seperator", new predefined_function("path_remove_last_folder_seperator", removeLastFolderSeperatorOfPath, new string[1] { "path" }));
+            //internalContext.symbolTable.set("relative_path", new predefined_function("path_relative_path", relativePath, new string[2] { "relative_to", "path" }));
+            //internalContext.symbolTable.set("ends_in_folder_seperator", new predefined_function("path_ends_in_folder_seperator", pathEndsInFolderSeperator, new string[1] { "path" }));
+            //internalContext.symbolTable.set("remove_last_folder_seperator", new predefined_function("path_remove_last_folder_seperator", removeLastFolderSeperatorOfPath, new string[1] { "path" }));
 
             return new runtimeResult().success(new @object(name, internalContext).setPosition(startPos, endPos).setContext(context));
         }
@@ -551,7 +553,7 @@ namespace ezrSquared.Libraries.IO
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
 
             string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
-            return result.success(new boolean(Path.Exists(filepath)));
+            return result.success(new boolean(File.Exists(filepath) || Directory.Exists(filepath)));
         }
 
         private runtimeResult joinPaths(context context, position[] positions)
@@ -571,7 +573,11 @@ namespace ezrSquared.Libraries.IO
                 filepaths[i] = (paths_[i] is @string) ? ((@string)paths_[i]).storedValue : string.Join("", ((character_list)paths_[i]).storedValue);
             }
 
-            return result.success(new @string(Path.Join(filepaths)));
+            string newPath = "";
+            for (int i = 0; i < filepaths.Length; i++)
+                newPath = Path.Combine(newPath, filepaths[i]);
+
+            return result.success(new @string(newPath));
         }
 
         private runtimeResult combinePaths(context context, position[] positions)
@@ -783,46 +789,46 @@ namespace ezrSquared.Libraries.IO
             return result.success(new @string(filepath));
         }
 
-        private runtimeResult relativePath(context context, position[] positions)
-        {
-            runtimeResult result = new runtimeResult();
-
-            item relativeTo = context.symbolTable.get("relative_to");
-            if (relativeTo is not @string && relativeTo is not character_list)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Relative_to must be a string or character_list", context));
-            item path = context.symbolTable.get("path");
-            if (path is not @string && path is not character_list)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
-
-            string relativeTo_ = (relativeTo is @string) ? ((@string)relativeTo).storedValue.ToString() : string.Join("", ((character_list)relativeTo).storedValue);
-            string path_ = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
-
-            return result.success(new @string(Path.GetRelativePath(relativeTo_, path_)));
-        }
-
-        private runtimeResult pathEndsInFolderSeperator(context context, position[] positions)
-        {
-            runtimeResult result = new runtimeResult();
-
-            item path = context.symbolTable.get("path");
-            if (path is not @string && path is not character_list)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
-
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
-            return result.success(new boolean(Path.EndsInDirectorySeparator(filepath)));
-        }
-
-        private runtimeResult removeLastFolderSeperatorOfPath(context context, position[] positions)
-        {
-            runtimeResult result = new runtimeResult();
-
-            item path = context.symbolTable.get("path");
-            if (path is not @string && path is not character_list)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
-
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
-            return result.success(new @string(Path.TrimEndingDirectorySeparator(filepath)));
-        }
+        //private runtimeResult relativePath(context context, position[] positions)
+        //{
+        //    runtimeResult result = new runtimeResult();
+        //
+        //    item relativeTo = context.symbolTable.get("relative_to");
+        //    if (relativeTo is not @string && relativeTo is not character_list)
+        //        return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Relative_to must be a string or character_list", context));
+        //    item path = context.symbolTable.get("path");
+        //    if (path is not @string && path is not character_list)
+        //        return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
+        //
+        //    string relativeTo_ = (relativeTo is @string) ? ((@string)relativeTo).storedValue.ToString() : string.Join("", ((character_list)relativeTo).storedValue);
+        //    string path_ = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+        //
+        //    return result.success(new @string(Path.GetRelativePath(relativeTo_, path_)));
+        //}
+        //
+        //private runtimeResult pathEndsInFolderSeperator(context context, position[] positions)
+        //{
+        //    runtimeResult result = new runtimeResult();
+        //
+        //    item path = context.symbolTable.get("path");
+        //    if (path is not @string && path is not character_list)
+        //        return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
+        //
+        //    string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+        //    return result.success(new boolean(Path.EndsInDirectorySeparator(filepath)));
+        //}
+        //
+        //private runtimeResult removeLastFolderSeperatorOfPath(context context, position[] positions)
+        //{
+        //    runtimeResult result = new runtimeResult();
+        //
+        //    item path = context.symbolTable.get("path");
+        //    if (path is not @string && path is not character_list)
+        //        return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
+        //
+        //    string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+        //    return result.success(new @string(Path.TrimEndingDirectorySeparator(filepath)));
+        //}
 
         public override item copy() { return new path().setPosition(startPos, endPos).setContext(context); }
 

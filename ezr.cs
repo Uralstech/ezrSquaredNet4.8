@@ -4,7 +4,11 @@ using ezrSquared.Nodes;
 using ezrSquared.Values;
 using ezrSquared.Helpers;
 using static ezrSquared.Constants.constants;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
+using System.IO;
+using System;
 
 using ezrSquared.Libraries.IO;
 using ezrSquared.Libraries.STD;
@@ -699,7 +703,7 @@ namespace ezrSquared.Main
                 else if (isGlobal)
                     reverse(result.advanceCount);
 
-                node node = result.register(binaryOperation(compExpression, new TypeValuePair[] { new TypeValuePair(TOKENTYPE.KEY, "and"), new TypeValuePair(TOKENTYPE.KEY, "or" ) }));
+                node node = result.register(binaryOperation(compExpression, new TypeValuePair[] { new TypeValuePair(TOKENTYPE.KEY, "and"), new TypeValuePair(TOKENTYPE.KEY, "or") }));
                 if (result.error != null)
                     return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'if', 'count', 'while', 'try', 'function', 'special', 'object', 'include', 'invert', 'global', 'item', '!', '(', '[', '{', '+', '-' or '~'", currentToken.startPos, currentToken.endPos));
                 return result.success(node);
@@ -3274,7 +3278,7 @@ namespace ezrSquared.Main
                 {
                     for (int i = 0; i < LOCALLIBPATHS.Count; i++)
                     {
-                        string path = Path.Join(LOCALLIBPATHS[i], file);
+                        string path = Path.Combine(LOCALLIBPATHS[i], file);
                         if (File.Exists(path))
                         {
                             realFilepath = path;
@@ -3357,7 +3361,7 @@ namespace ezrSquared.Main
                     string script;
                     try
                     {
-                        script = string.Join('\n', File.ReadAllLines(realFilepath));
+                        script = string.Join("\n", File.ReadAllLines(realFilepath));
                     }
                     catch (Exception exception)
                     {
@@ -3407,19 +3411,7 @@ namespace ezrSquared.Main
                     predefinedSymbolTable.set("err_run", new @string(RT_RUN));
                     predefinedSymbolTable.set("err_io", new @string(RT_IO));
 
-                    predefinedSymbolTable.set("show", new builtin_function("show", new string[1] { "message" }));
-                    predefinedSymbolTable.set("show_error", new builtin_function("show_error", new string[2] { "tag", "message" }));
-                    predefinedSymbolTable.set("get", new builtin_function("get", new string[1] { "message" }));
-                    predefinedSymbolTable.set("clear", new builtin_function("clear", new string[0]));
-                    predefinedSymbolTable.set("hash", new builtin_function("hash", new string[1] { "value" }));
-                    predefinedSymbolTable.set("type_of", new builtin_function("type_of", new string[1] { "value" }));
-                    predefinedSymbolTable.set("run", new builtin_function("run", new string[1] { "file" }));
-
                     position pos = new position(0, 0, 0, "<main>", "");
-                    predefinedSymbolTable.set("file", new @file().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0]).value);
-                    predefinedSymbolTable.set("folder", new folder().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0]).value);
-                    predefinedSymbolTable.set("path", new path().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0]).value);
-
                     predefinedSymbolTable.set("integer", new integer_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0]).value);
                     predefinedSymbolTable.set("float", new float_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0]).value);
                     predefinedSymbolTable.set("string", new string_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0]).value);
@@ -3436,12 +3428,11 @@ namespace ezrSquared.Main
 
         public static List<string> LOCALLIBPATHS = new List<string>();
 
-        public static error? run(string file, string input, context runtimeContext, out item? result)
+        public static error? run(string file, string? path, string input, context runtimeContext, out item? result)
         {
             result = null;
-            string fullFilePath = Path.GetDirectoryName(Path.GetFullPath(file));
-            if (fullFilePath != Directory.GetCurrentDirectory())
-                LOCALLIBPATHS.Add(fullFilePath);
+            if (!string.IsNullOrEmpty(path))
+                LOCALLIBPATHS.Add(path);
 
             lexer lexer = new lexer(file, input);
             token[] tokens = lexer.compileTokens(out error? error);

@@ -4,7 +4,11 @@ using ezrSquared.Nodes;
 using ezrSquared.Helpers;
 using static ezrSquared.Constants.constants;
 using static ezrSquared.Main.ezr;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
+using System.IO;
+using System;
 
 namespace ezrSquared.Values
 {
@@ -68,7 +72,7 @@ namespace ezrSquared.Values
         private void ResizeCollection()
         {
             raise++;
-            LinkedList<KeyValuePair<item, item>>[] newArray = new LinkedList<KeyValuePair<item, item>>[(int)MathF.Pow(2, raise)];
+            LinkedList<KeyValuePair<item, item>>[] newArray = new LinkedList<KeyValuePair<item, item>>[(int)Math.Pow(2, raise)];
             Array.Copy(_values, newArray, _values.Length);
 
             _values = newArray;
@@ -583,9 +587,9 @@ namespace ezrSquared.Values
         {
             error = null;
             if (other is integer)
-                return new integer((int)MathF.Pow(storedValue, ((integer)other).storedValue)).setContext(context);
+                return new integer((int)Math.Pow(storedValue, ((integer)other).storedValue)).setContext(context);
             else if (other is @float)
-                return new @float(MathF.Pow(storedValue, ((@float)other).storedValue)).setContext(context);
+                return new @float(Math.Pow(storedValue, ((@float)other).storedValue)).setContext(context);
 
             error = illegalOperation(other);
             return null;
@@ -650,7 +654,7 @@ namespace ezrSquared.Values
         }
 
 
-        private runtimeResult abs(context context, position[] positions) { return new runtimeResult().success(new integer(int.Abs(storedValue))); }
+        private runtimeResult abs(context context, position[] positions) { return new runtimeResult().success(new integer((int)Math.Abs(storedValue))); }
         private runtimeResult asString(context context, position[] positions) { return new runtimeResult().success(new @string(ToString())); }
         private runtimeResult asCharList(context context, position[] positions) { return new runtimeResult().success(new character_list(ToString())); }
         private runtimeResult asFloat(context context, position[] positions) { return new runtimeResult().success(new @float(storedValue)); }
@@ -744,7 +748,7 @@ namespace ezrSquared.Values
         {
             error = null;
             if (other is integer || other is @float)
-                return new @float(MathF.Pow(storedValue, ((value)other).storedValue)).setContext(context);
+                return new @float((float)Math.Pow(storedValue, ((value)other).storedValue)).setContext(context);
 
             error = illegalOperation(other);
             return null;
@@ -809,7 +813,7 @@ namespace ezrSquared.Values
             return new runtimeResult().success(this);
         }
 
-        private runtimeResult abs(context context, position[] positions) { return new runtimeResult().success(new @float(float.Abs(storedValue))); }
+        private runtimeResult abs(context context, position[] positions) { return new runtimeResult().success(new @float((float)Math.Abs(storedValue))); }
         private runtimeResult asString(context context, position[] positions) { return new runtimeResult().success(new @string(ToString())); }
         private runtimeResult asCharList(context context, position[] positions) { return new runtimeResult().success(new character_list(ToString())); }
         private runtimeResult asInteger(context context, position[] positions)
@@ -835,7 +839,7 @@ namespace ezrSquared.Values
             if (digit is not integer)
                 return result.failure(new runtimeError(startPos, endPos, RT_TYPE, "Digit must be an integer", context));
 
-            return new runtimeResult().success(new @float(MathF.Round(storedValue, ((integer)digit).storedValue)));
+            return new runtimeResult().success(new @float((float)Math.Round(storedValue, ((integer)digit).storedValue)));
         }
 
         public override bool isTrue(out error? error) { error = null; return storedValue != 0f; }
@@ -1553,7 +1557,7 @@ namespace ezrSquared.Values
             else if (startAsInt > endAsInt)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Start cannot be greater than end", context));
 
-            return result.success(new array(((item[])storedValue)[startAsInt..endAsInt]));
+            return result.success(new array(((item[])storedValue).Skip(startAsInt).Take(startAsInt - endAsInt).ToArray()));
         }
 
         private runtimeResult asBoolean(context context, position[] positions)
@@ -2268,7 +2272,7 @@ namespace ezrSquared.Values
             string script;
             try
             {
-                script = string.Join('\n', File.ReadAllLines(path));
+                script = string.Join("\n", File.ReadAllLines(path));
             }
             catch (IOException exception)
             {
@@ -2278,7 +2282,7 @@ namespace ezrSquared.Values
             context runtimeContext = new context("<main>", globalPredefinedContext, new position(0, 0, 0, "<main>", ""), false);
             runtimeContext.symbolTable = new symbolTable(globalPredefinedContext.symbolTable);
 
-            error? error = run(Path.GetFileName(path), script, runtimeContext, out item? _);
+            error? error = run(Path.GetFileName(path), path, script, runtimeContext, out item? _);
             if (error != null)
                 return result.failure(new runtimeError(startPos, endPos, RT_RUN, $"Failed to execute script \"{path}\"\n\n{error.asString()}", context));
             return result.success(new nothing());
