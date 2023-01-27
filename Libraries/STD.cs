@@ -3,6 +3,7 @@ using ezrSquared.Helpers;
 using ezrSquared.Errors;
 using ezrSquared.General;
 using static ezrSquared.Constants.constants;
+using System.Threading.Tasks;
 using System;
 
 namespace ezrSquared.Libraries.STD
@@ -11,7 +12,7 @@ namespace ezrSquared.Libraries.STD
     {
         public integer_class() : base("<std <integer>>") { }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             context internalContext = base.generateContext();
             internalContext.symbolTable.set("maximum", new integer(int.MaxValue));
@@ -30,7 +31,7 @@ namespace ezrSquared.Libraries.STD
     {
         public float_class() : base("<std <float>>") { }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             context internalContext = base.generateContext();
             internalContext.symbolTable.set("maximum", new @float(float.MaxValue));
@@ -58,7 +59,7 @@ namespace ezrSquared.Libraries.STD
     {
         public string_class() : base("<std <string>>") { }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             context internalContext = base.generateContext();
             internalContext.symbolTable.set("empty", new @string(string.Empty));
@@ -97,7 +98,7 @@ namespace ezrSquared.Libraries.STD
     {
         public character_list_class() : base("<std <character_list>>") { }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             context internalContext = base.generateContext();
             internalContext.symbolTable.set("empty", new character_list(string.Empty));

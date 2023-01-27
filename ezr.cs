@@ -5,6 +5,7 @@ using ezrSquared.Values;
 using ezrSquared.Helpers;
 using static ezrSquared.Constants.constants;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Reflection;
 using System.Linq;
 using System.IO;
@@ -2651,76 +2652,72 @@ namespace ezrSquared.Main
         {
             public interpreter() { }
 
-            public runtimeResult visit(node node, context context)
+            public async Task<runtimeResult> visit(node node, context context)
             {
                 string nodeName = node.GetType().Name;
                 string methodName = $"visit_{nodeName}";
                 MethodInfo? info = GetType().GetMethod(methodName, (BindingFlags.NonPublic | BindingFlags.Instance));
                 if (info != null)
-                {
-                    object result = info.Invoke(this, new object[] { node, context });
-                    return (runtimeResult)result;
-                }
-
+                    return await (Task<runtimeResult>)info.Invoke(this, new object[] { node, context });
                 throw new Exception($"No {methodName} method defined!");
             }
 
-            private runtimeResult visit_numberNode(numberNode node, context context)
+            private async Task<runtimeResult> visit_numberNode(numberNode node, context context)
             {
                 if (node.valueToken.type == TOKENTYPE.INT)
                     return new runtimeResult().success(new integer((int)node.valueToken.value).setPosition(node.startPos, node.endPos).setContext(context));
                 return new runtimeResult().success(new @float((float)node.valueToken.value).setPosition(node.startPos, node.endPos).setContext(context));
             }
 
-            private runtimeResult visit_stringNode(stringNode node, context context)
+            private async Task<runtimeResult> visit_stringNode(stringNode node, context context)
             {
                 return new runtimeResult().success(new @string(node.valueToken.value.ToString()).setPosition(node.startPos, node.endPos).setContext(context));
             }
 
-            private runtimeResult visit_charListNode(charListNode node, context context)
+            private async Task<runtimeResult> visit_charListNode(charListNode node, context context)
             {
                 return new runtimeResult().success(new character_list(node.valueToken.value.ToString()).setPosition(node.startPos, node.endPos).setContext(context));
             }
 
-            private runtimeResult visit_arrayNode(arrayNode node, context context)
+            private async Task<runtimeResult> visit_arrayNode(arrayNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
                 item[] elements = new item[node.elementNodes.Length];
 
                 for (int i = 0; i < elements.Length; i++)
                 {
-                    elements[i] = result.register(visit(node.elementNodes[i], context));
+                    elements[i] = result.register(await visit(node.elementNodes[i], context));
                     if (result.shouldReturn()) return result;
                 }
 
                 return result.success(new array(elements).setPosition(node.startPos, node.endPos).setContext(context));
             }
 
-            private runtimeResult visit_listNode(listNode node, context context)
+            private async Task<runtimeResult> visit_listNode(listNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
                 item[] elements = new item[node.elementNodes.Length];
 
                 for (int i = 0; i < elements.Length; i++)
                 {
-                    elements[i] = result.register(visit(node.elementNodes[i], context));
+                    elements[i] = result.register(await visit(node.elementNodes[i], context));
                     if (result.shouldReturn()) return result;
                 }
 
                 return result.success(new list(elements).setPosition(node.startPos, node.endPos).setContext(context));
             }
 
-            private runtimeResult visit_dictionaryNode(dictionaryNode node, context context)
+            private async Task<runtimeResult> visit_dictionaryNode(dictionaryNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
                 ItemDictionary dictionary_ = new ItemDictionary();
 
                 for (int i = 0; i < node.nodePairs.Length; i++)
                 {
-                    item key = result.register(visit(node.nodePairs[i][0], context));
+                    item key = result.register(await visit(node.nodePairs[i][0], context));
                     if (result.shouldReturn()) return result;
 
-                    item value = result.register(visit(node.nodePairs[i][1], context));
+                    item value = result.register(await visit(node.nodePairs[i][1], context));
                     if (result.shouldReturn()) return result;
 
                     dictionary_.Add(key, value, out error? error);
@@ -2730,7 +2727,7 @@ namespace ezrSquared.Main
                 return result.success(new dictionary(dictionary_).setPosition(node.startPos, node.endPos).setContext(context));
             }
 
-            private runtimeResult visit_variableAccessNode(variableAccessNode node, context context)
+            private async Task<runtimeResult> visit_variableAccessNode(variableAccessNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
                 string varName = node.valueToken.value.ToString();
@@ -2756,12 +2753,12 @@ namespace ezrSquared.Main
                 return result.success(variable.copy().setPosition(node.startPos, node.endPos).setContext(context));
             }
 
-            private runtimeResult visit_simpleVariableAssignNode(simpleVariableAssignNode node, context context)
+            private async Task<runtimeResult> visit_simpleVariableAssignNode(simpleVariableAssignNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
                 string varName = node.nameToken.value.ToString();
 
-                item variable = result.register(visit(node.valueNode, context));
+                item variable = result.register(await visit(node.valueNode, context));
                 if (result.shouldReturn()) return result;
 
                 if (node.operatorToken != null && node.operatorToken.type != TOKENTYPE.COLON)
@@ -2812,25 +2809,25 @@ namespace ezrSquared.Main
                 return result.success(variable);
             }
 
-            private runtimeResult visit_objectVariableAssignNode(objectVariableAssignNode node, context context)
+            private async Task<runtimeResult> visit_objectVariableAssignNode(objectVariableAssignNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
                 string varName = node.varName.value.ToString();
 
-                item variable = result.register(visit(node.valueNode, context));
+                item variable = result.register(await visit(node.valueNode, context));
                 if (result.shouldReturn()) return result;
 
                 binaryOperationNode binOpNode = (binaryOperationNode)node.accessNode;
-                item object_ = result.register(visit(binOpNode.leftNode, context));
+                item object_ = result.register(await visit(binOpNode.leftNode, context));
                 if (result.shouldReturn()) return result;
 
                 if (object_ is value)
-                    object_ = result.register(object_.execute(new item[0]));
+                    object_ = result.register(await object_.execute(new item[0]));
                 if (result.shouldReturn()) return result;
 
                 if (node.operatorToken != null && node.operatorToken.type != TOKENTYPE.COLON)
                 {
-                    item? oldVariableValue = result.register(object_.get(binOpNode.rightNode));
+                    item? oldVariableValue = result.register(await object_.get(binOpNode.rightNode));
                     if (result.shouldReturn()) return result;
 
                     error? err = null;
@@ -2873,26 +2870,26 @@ namespace ezrSquared.Main
                 return result.success(variable);
             }
 
-            private runtimeResult visit_binaryOperationNode(binaryOperationNode node, context context)
+            private async Task<runtimeResult> visit_binaryOperationNode(binaryOperationNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
-                item left = result.register(visit(node.leftNode, context));
+                item left = result.register(await visit(node.leftNode, context));
                 if (result.shouldReturn()) return result;
 
                 if (node.operatorToken.type == TOKENTYPE.PERIOD)
                 {
                     left = left.copy().setPosition(node.startPos, node.endPos);
                     if (left is value)
-                        left = result.register(left.execute(new item[0]));
+                        left = result.register(await left.execute(new item[0]));
                     if (result.shouldReturn()) return result;
 
-                    item returnValue = result.register(left.get(node.rightNode));
+                    item returnValue = result.register(await left.get(node.rightNode));
                     if (result.shouldReturn()) return result;
 
                     return result.success(returnValue.copy().setPosition(node.startPos, node.endPos).setContext(context));
                 }
 
-                item right = result.register(visit(node.rightNode, context));
+                item right = result.register(await visit(node.rightNode, context));
                 if (result.shouldReturn()) return result;
 
                 error? err = null;
@@ -2945,10 +2942,10 @@ namespace ezrSquared.Main
                 return result.success(res.setPosition(node.startPos, node.endPos));
             }
 
-            private runtimeResult visit_unaryOperationNode(unaryOperationNode node, context context)
+            private async Task<runtimeResult> visit_unaryOperationNode(unaryOperationNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
-                item variable = result.register(visit(node.operatedNode, context));
+                item variable = result.register(await visit(node.operatedNode, context));
                 if (result.shouldReturn()) return result;
 
                 error? err = null;
@@ -2968,13 +2965,13 @@ namespace ezrSquared.Main
                 return result.success(res.setPosition(node.startPos, node.endPos));
             }
 
-            private runtimeResult visit_ifNode(ifNode node, context context)
+            private async Task<runtimeResult> visit_ifNode(ifNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
 
                 for (int i = 0; i < node.cases.Length; i++)
                 {
-                    item condition = result.register(visit(node.cases[i][0], context));
+                    item condition = result.register(await visit(node.cases[i][0], context));
                     if (result.shouldReturn()) return result;
 
                     bool boolValue = condition.isTrue(out error? error);
@@ -2982,7 +2979,7 @@ namespace ezrSquared.Main
 
                     if (boolValue)
                     {
-                        item value = result.register(visit(node.cases[i][1], context));
+                        item value = result.register(await visit(node.cases[i][1], context));
                         if (result.shouldReturn()) return result;
 
                         return result.success(node.shouldReturnNull ? new nothing().setPosition(node.startPos, node.endPos).setContext(context) : value);
@@ -2991,7 +2988,7 @@ namespace ezrSquared.Main
 
                 if (node.elseCase != null)
                 {
-                    item value = result.register(visit(node.elseCase, context));
+                    item value = result.register(await visit(node.elseCase, context));
                     if (result.shouldReturn()) return result;
 
                     return result.success(node.shouldReturnNull ? new nothing().setPosition(node.startPos, node.endPos).setContext(context) : value);
@@ -3000,7 +2997,7 @@ namespace ezrSquared.Main
                 return result.success(new nothing().setPosition(node.startPos, node.endPos).setContext(context));
             }
 
-            private runtimeResult visit_countNode(countNode node, context context)
+            private async Task<runtimeResult> visit_countNode(countNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
                 List<item> elements = new List<item>();
@@ -3010,7 +3007,7 @@ namespace ezrSquared.Main
 
                 if (node.startValueNode != null)
                 {
-                    item start = result.register(visit(node.startValueNode, context));
+                    item start = result.register(await visit(node.startValueNode, context));
                     if (result.shouldReturn()) return result;
 
                     if (start is not integer && start is not @float)
@@ -3022,7 +3019,7 @@ namespace ezrSquared.Main
                         i = ((@float)start).storedValue;
                 }
 
-                item end = result.register(visit(node.endValueNode, context));
+                item end = result.register(await visit(node.endValueNode, context));
                 if (result.shouldReturn()) return result;
 
                 if (end is not integer && end is not @float)
@@ -3035,7 +3032,7 @@ namespace ezrSquared.Main
 
                 if (node.stepValueNode != null)
                 {
-                    item step = result.register(visit(node.stepValueNode, context));
+                    item step = result.register(await visit(node.stepValueNode, context));
                     if (result.shouldReturn()) return result;
 
                     if (step is not integer && step is not @float)
@@ -3061,7 +3058,7 @@ namespace ezrSquared.Main
                             context.symbolTable.set(varName, new integer((int)j));
                     }
 
-                    item body = result.register(visit(node.bodyNode, context));
+                    item body = result.register(await visit(node.bodyNode, context));
                     if (result.shouldReturn() && !result.loopShouldSkip && !result.loopShouldStop) return result;
 
                     if (result.loopShouldSkip) continue;
@@ -3073,21 +3070,21 @@ namespace ezrSquared.Main
                 return result.success(node.shouldReturnNull ? new nothing().setPosition(node.startPos, node.endPos).setContext(context) : new array(elements.ToArray()).setPosition(node.startPos, node.endPos).setContext(context));
             }
 
-            private runtimeResult visit_whileNode(whileNode node, context context)
+            private async Task<runtimeResult> visit_whileNode(whileNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
                 List<item> elements = new List<item>();
 
                 while (true)
                 {
-                    item condition = result.register(visit(node.conditionNode, context));
+                    item condition = result.register(await visit(node.conditionNode, context));
                     if (result.shouldReturn()) return result;
 
                     bool boolValue = condition.isTrue(out error? error);
                     if (error != null) return result.failure(error);
                     if (!boolValue) break;
 
-                    item body = result.register(visit(node.bodyNode, context));
+                    item body = result.register(await visit(node.bodyNode, context));
                     if (result.shouldReturn() && !result.loopShouldSkip && !result.loopShouldStop) return result;
 
                     if (result.loopShouldSkip) continue;
@@ -3099,11 +3096,11 @@ namespace ezrSquared.Main
                 return result.success(node.shouldReturnNull ? new nothing().setPosition(node.startPos, node.endPos).setContext(context) : new array(elements.ToArray()).setPosition(node.startPos, node.endPos).setContext(context));
             }
 
-            private runtimeResult visit_tryNode(tryNode node, context context)
+            private async Task<runtimeResult> visit_tryNode(tryNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
 
-                item value = result.register(visit(node.bodyNode, context));
+                item value = result.register(await visit(node.bodyNode, context));
                 if (result.shouldReturn() && result.error == null) return result;
 
                 if (result.error != null)
@@ -3121,7 +3118,7 @@ namespace ezrSquared.Main
                                 if (node.catches[i][1] != null)
                                     context.symbolTable.set(((token)node.catches[i][1]).value.ToString(), new @string(tag).setPosition(node.startPos, node.endPos).setContext(context));
 
-                                value = result.register(visit((node)node.catches[i][2], context));
+                                value = result.register(await visit((node)node.catches[i][2], context));
                                 if (result.shouldReturn()) return result;
                                 break;
                             }
@@ -3146,7 +3143,7 @@ namespace ezrSquared.Main
                                     if (node.catches[i][1] != null)
                                         context.symbolTable.set(((token)node.catches[i][1]).value.ToString(), new @string(tag).setPosition(node.startPos, node.endPos).setContext(context));
 
-                                    value = result.register(visit((node)node.catches[i][2], context));
+                                    value = result.register(await visit((node)node.catches[i][2], context));
                                     if (result.shouldReturn()) return result;
                                     break;
                                 }
@@ -3158,17 +3155,17 @@ namespace ezrSquared.Main
                 return result.success(node.shouldReturnNull ? new nothing().setPosition(node.startPos, node.endPos).setContext(context) : value.setPosition(node.startPos, node.endPos).setContext(context));
             }
 
-            private runtimeResult visit_skipNode(skipNode node, context context)
+            private async Task<runtimeResult> visit_skipNode(skipNode node, context context)
             {
                 return new runtimeResult().skipSuccess();
             }
 
-            private runtimeResult visit_stopNode(stopNode node, context context)
+            private async Task<runtimeResult> visit_stopNode(stopNode node, context context)
             {
                 return new runtimeResult().stopSuccess();
             }
 
-            private runtimeResult visit_functionDefinitionNode(functionDefinitionNode node, context context)
+            private async Task<runtimeResult> visit_functionDefinitionNode(functionDefinitionNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
 
@@ -3183,7 +3180,7 @@ namespace ezrSquared.Main
                 return result.success(function);
             }
 
-            private runtimeResult visit_specialDefinitionNode(specialDefinitionNode node, context context)
+            private async Task<runtimeResult> visit_specialDefinitionNode(specialDefinitionNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
 
@@ -3229,42 +3226,42 @@ namespace ezrSquared.Main
                 return result.success(@object);
             }
 
-            private runtimeResult visit_callNode(callNode node, context context)
+            private async Task<runtimeResult> visit_callNode(callNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
                 List<item> args = new List<item>();
 
-                item valueToCall = result.register(visit(node.nodeToCall, context));
+                item valueToCall = result.register(await visit(node.nodeToCall, context));
                 if (result.shouldReturn()) return result;
 
                 valueToCall = valueToCall.copy().setPosition(node.startPos, node.endPos);
                 for (int i = 0; i < node.argNodes.Length; i++)
                 {
-                    args.Add(result.register(visit(node.argNodes[i], context)));
+                    args.Add(result.register(await visit(node.argNodes[i], context)));
                     if (result.shouldReturn()) return result;
                 }
 
-                item returnValue = result.register(valueToCall.execute(args.ToArray()));
+                item returnValue = result.register(await valueToCall.execute(args.ToArray()));
                 if (result.shouldReturn()) return result;
 
                 return result.success(returnValue.copy().setPosition(node.startPos, node.endPos).setContext(context));
             }
 
-            private runtimeResult visit_returnNode(returnNode node, context context)
+            private async Task<runtimeResult> visit_returnNode(returnNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
 
                 item value = new nothing();
                 if (node.nodeToReturn != null)
                 {
-                    value = result.register(visit(node.nodeToReturn, context));
+                    value = result.register(await visit(node.nodeToReturn, context));
                     if (result.shouldReturn()) return result;
                 }
 
                 return result.returnSuccess(value.setPosition(node.startPos, node.endPos).setContext(context));
             }
 
-            private runtimeResult visit_includeNode(includeNode node, context context)
+            private async Task<runtimeResult> visit_includeNode(includeNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
 
@@ -3375,7 +3372,7 @@ namespace ezrSquared.Main
                     if (parseResult.error != null)
                         return result.failure(new runtimeError(node.startPos, node.endPos, RT_RUN, $"Failed to finish executing script \"{file}\"\n\n{parseResult.error.asString()}", context));
 
-                    value = result.register(new @class(formattedFileName, null, parseResult.node, new string[0]).setPosition(node.startPos, node.endPos).setContext(context).execute(new item[0]));
+                    value = result.register(await new @class(formattedFileName, null, parseResult.node, new string[0]).setPosition(node.startPos, node.endPos).setContext(context).execute(new item[0]));
                     if (result.shouldReturn()) return result;
 
                 }
@@ -3390,6 +3387,12 @@ namespace ezrSquared.Main
         {
             get
             {
+                runtimeResult waitTask(Task<runtimeResult> task)
+                {
+                    task.Wait();
+                    return task.Result;
+                }
+
                 if (_globalPredefinedContext.symbolTable == null)
                 {
                     symbolTable predefinedSymbolTable = new symbolTable();
@@ -3411,12 +3414,11 @@ namespace ezrSquared.Main
                     predefinedSymbolTable.set("err_io", new @string(RT_IO));
 
                     position pos = new position(0, 0, 0, "<main>", "");
-                    predefinedSymbolTable.set("integer", new integer_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0]).value);
-                    predefinedSymbolTable.set("float", new float_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0]).value);
-                    predefinedSymbolTable.set("string", new string_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0]).value);
-                    predefinedSymbolTable.set("character_list", new character_list_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0]).value);
-
-                    predefinedSymbolTable.set("random", new random().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0]).value);
+                    predefinedSymbolTable.set("integer", waitTask(new integer_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("float", waitTask(new float_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("string", waitTask(new string_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("character_list", waitTask(new character_list_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("random", waitTask(new random().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
 
                     _globalPredefinedContext.symbolTable = predefinedSymbolTable;
                 }
@@ -3427,26 +3429,24 @@ namespace ezrSquared.Main
 
         public static List<string> LOCALLIBPATHS = new List<string>();
 
-        public static error? run(string file, string? path, string input, context runtimeContext, out item? result)
+        public static async Task<(error?, item?)> run(string file, string? path, string input, context runtimeContext)
         {
-            result = null;
             if (!string.IsNullOrEmpty(path))
                 LOCALLIBPATHS.Add(path);
 
             lexer lexer = new lexer(file, input);
             token[] tokens = lexer.compileTokens(out error? error);
-            if (error != null) return error;
+            if (error != null) return (error, null);
 
             parser parser = new parser(tokens);
             parseResult abstractSyntaxTree = parser.parse();
-            if (abstractSyntaxTree.error != null) return abstractSyntaxTree.error;
+            if (abstractSyntaxTree.error != null) return (abstractSyntaxTree.error, null);
 
             interpreter interpreter = new interpreter();
-            runtimeResult result_ = interpreter.visit(abstractSyntaxTree.node, runtimeContext);
-            if (result_.error != null) return result_.error;
+            runtimeResult result_ = await interpreter.visit(abstractSyntaxTree.node, runtimeContext);
+            if (result_.error != null) return (result_.error, null);
 
-            result = result_.value;
-            return null;
+            return (null, result_.value);
         }
     }
 }

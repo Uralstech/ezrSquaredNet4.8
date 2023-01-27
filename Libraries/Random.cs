@@ -3,6 +3,7 @@ using ezrSquared.Helpers;
 using ezrSquared.Errors;
 using ezrSquared.General;
 using static ezrSquared.Constants.constants;
+using System.Threading.Tasks;
 
 namespace ezrSquared.Libraries.Random
 {
@@ -12,7 +13,7 @@ namespace ezrSquared.Libraries.Random
         public random() : base("<random <random>>")
         { random_ = new System.Random(); }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             context internalContext = base.generateContext();
             internalContext.symbolTable.set("get", new predefined_function("random_get", randomNumber, new string[0]));

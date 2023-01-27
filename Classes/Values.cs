@@ -5,6 +5,7 @@ using ezrSquared.Helpers;
 using static ezrSquared.Constants.constants;
 using static ezrSquared.Main.ezr;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Reflection;
 using System.Linq;
 using System.IO;
@@ -328,8 +329,8 @@ namespace ezrSquared.Values
             return null;
         }
 
-        public virtual runtimeResult execute(item[] args) { return new runtimeResult().failure(illegalOperation()); }
-        public virtual runtimeResult get(node node) { return new runtimeResult().failure(illegalOperation()); }
+        public virtual async Task<runtimeResult> execute(item[] args) { return new runtimeResult().failure(illegalOperation()); }
+        public virtual async Task<runtimeResult> get(node node) { return new runtimeResult().failure(illegalOperation()); }
         public virtual runtimeResult set(string name, item variable) { return new runtimeResult().failure(illegalOperation()); }
 
         public virtual item copy() { throw new Exception($"No copy method defined for \"{GetType().Name}\"!"); }
@@ -365,18 +366,18 @@ namespace ezrSquared.Values
             return newContext;
         }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             internalContext = generateContext();
             return new runtimeResult().success(this);
         }
 
-        public override runtimeResult get(node node)
+        public override async Task<runtimeResult> get(node node)
         {
             runtimeResult result = new runtimeResult();
             if (internalContext != null)
             {
-                item value = result.register(interpreter.visit(node, internalContext));
+                item value = result.register(await interpreter.visit(node, internalContext));
                 if (result.shouldReturn()) return result;
                 return result.success(value);
             }
@@ -399,9 +400,9 @@ namespace ezrSquared.Values
             return new boolean(!storedValue).setContext(context);
         }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
-            base.execute(args);
+            await base.execute(args);
 
             internalContext.symbolTable.set("as_string", new predefined_function("boolean_as_string", asString, new string[0]));
             internalContext.symbolTable.set("as_character_list", new predefined_function("boolean_as_character_list", asCharList, new string[0]));
@@ -423,9 +424,9 @@ namespace ezrSquared.Values
     {
         public nothing() : base(null) { }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
-            base.execute(args);
+            await base.execute(args);
 
             internalContext.symbolTable.set("as_string", new predefined_function("nothing_as_string", asString, new string[0]));
             internalContext.symbolTable.set("as_character_list", new predefined_function("nothing_as_character_list", asCharList, new string[0]));
@@ -641,9 +642,9 @@ namespace ezrSquared.Values
             return new integer((storedValue == 0) ? 1 : 0).setContext(context);
         }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
-            base.execute(args);
+            await base.execute(args);
 
             internalContext.symbolTable.set("abs", new predefined_function("integer_abs", abs, new string[0]));
             internalContext.symbolTable.set("as_string", new predefined_function("integer_as_string", asString, new string[0]));
@@ -800,9 +801,9 @@ namespace ezrSquared.Values
             return new @float((storedValue == 0f) ? 1f : 0f).setContext(context);
         }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
-            base.execute(args);
+            await base.execute(args);
 
             internalContext.symbolTable.set("abs", new predefined_function("float_abs", abs, new string[0]));
             internalContext.symbolTable.set("as_string", new predefined_function("float_as_string", asString, new string[0]));
@@ -937,9 +938,9 @@ namespace ezrSquared.Values
             return base.checkIn(other, out error);
         }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
-            base.execute(args);
+            await base.execute(args);
 
             internalContext.symbolTable.set("length", new integer(storedValue.ToString().Length));
             internalContext.symbolTable.set("slice", new predefined_function("string_slice", stringSlice, new string[2] { "start", "end" }));
@@ -1230,9 +1231,9 @@ namespace ezrSquared.Values
             return base.checkIn(other, out error);
         }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
-            base.execute(args);
+            await base.execute(args);
 
             internalContext.symbolTable.set("length", new integer(((List<char>)storedValue).Count));
             internalContext.symbolTable.set("slice", new predefined_function("character_list_slice", charListSlice, new string[2] { "start", "end" }));
@@ -1524,9 +1525,9 @@ namespace ezrSquared.Values
             return null;
         }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
-            base.execute(args);
+            await base.execute(args);
 
             internalContext.symbolTable.set("length", new integer(((item[])storedValue).Length));
             internalContext.symbolTable.set("slice", new predefined_function("array_slice", arraySlice, new string[2] { "start", "end" }));
@@ -1740,9 +1741,9 @@ namespace ezrSquared.Values
             return null;
         }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
-            base.execute(args);
+            await base.execute(args);
 
             internalContext.symbolTable.set("length", new integer(((List<item>)storedValue).Count));
             internalContext.symbolTable.set("slice", new predefined_function("list_slice", listSlice, new string[2] { "start", "end" }));
@@ -1990,9 +1991,9 @@ namespace ezrSquared.Values
                 return null;
             }
         }
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
-            base.execute(args);
+            await base.execute(args);
 
             KeyValuePair<item, item>[] pairs = storedValue.GetArray();
             item[] keys = new item[pairs.Length];
@@ -2129,7 +2130,8 @@ namespace ezrSquared.Values
     public class predefined_function : baseFunction
     {
         private string[] argNames;
-        private Func<context, position[], runtimeResult> function;
+        private Func<context, position[], runtimeResult>? function;
+        private Func<context, position[], Task<runtimeResult>>? asyncFunction;
 
         public predefined_function(string name, Func<context, position[], runtimeResult> function, string[] argNames) : base(name)
         {
@@ -2137,20 +2139,36 @@ namespace ezrSquared.Values
             this.argNames = argNames;
         }
 
-        public override runtimeResult execute(item[] args)
+        public predefined_function(string name, Func<context, position[], Task<runtimeResult>> asyncFunction, string[] argNames) : base(name)
+        {
+            this.asyncFunction = asyncFunction;
+            this.argNames = argNames;
+        }
+
+        public override async Task<runtimeResult> execute(item[] args)
         {
             runtimeResult result = new runtimeResult();
 
             result.register(checkAndPopulateArgs(argNames, args, context));
             if (result.shouldReturn()) return result;
 
-            item returnValue = result.register(function.Invoke(context, new position[2] { startPos, endPos }));
+            item returnValue;
+            if (function != null)
+                returnValue = result.register(function.Invoke(context, new position[2] { startPos, endPos }));
+            else
+                returnValue = result.register(await asyncFunction.Invoke(context, new position[2] { startPos, endPos }));
+
             if (result.shouldReturn()) return result;
 
             return result.success(returnValue.setPosition(startPos, endPos).setContext(context));
         }
 
-        public override item copy() { return new predefined_function(name, function, argNames).setPosition(startPos, endPos).setContext(context); }
+        public override item copy()
+        {
+            if (function != null)
+                return new predefined_function(name, function, argNames).setPosition(startPos, endPos).setContext(context);
+            return new predefined_function(name, asyncFunction, argNames).setPosition(startPos, endPos).setContext(context);
+        }
 
         public override bool ItemEquals(item obj, out error? error) { error = null; if (obj is predefined_function) return ToString() == obj.ToString(); return false; }
         public override string ToString() { return $"<predefined function <{name}>>"; }
@@ -2162,7 +2180,7 @@ namespace ezrSquared.Values
         public builtin_function(string name, string[] argNames) : base(name)
         { this.argNames = argNames; }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             runtimeResult result = new runtimeResult();
             context newContext = generateContext();
@@ -2174,7 +2192,14 @@ namespace ezrSquared.Values
                 result.register(checkAndPopulateArgs(argNames, args, newContext));
                 if (result.shouldReturn()) return result;
 
-                item returnValue = result.register((runtimeResult)info.Invoke(this, new object[] { newContext }));
+                object output = info.Invoke(this, new object[] { newContext });
+
+                item returnValue;
+                if (output is runtimeResult)
+                    returnValue = result.register((runtimeResult)output);
+                else
+                    returnValue = result.register(await (Task<runtimeResult>)output);
+
                 if (result.shouldReturn()) return result;
                 return result.success(returnValue.setPosition(startPos, endPos).setContext(newContext));
             }
@@ -2258,7 +2283,7 @@ namespace ezrSquared.Values
             return new runtimeResult().success(new @string(type));
         }
 
-        private runtimeResult _run(context context)
+        private async Task<runtimeResult> _run(context context)
         {
             runtimeResult result = new runtimeResult();
             item file = context.symbolTable.get("file");
@@ -2282,7 +2307,7 @@ namespace ezrSquared.Values
             context runtimeContext = new context("<main>", globalPredefinedContext, new position(0, 0, 0, "<main>", ""), false);
             runtimeContext.symbolTable = new symbolTable(globalPredefinedContext.symbolTable);
 
-            error? error = run(Path.GetFileName(path), path, script, runtimeContext, out item? _);
+            (error? error, item? _) = await run(Path.GetFileName(path), path, script, runtimeContext);
             if (error != null)
                 return result.failure(new runtimeError(startPos, endPos, RT_RUN, $"Failed to execute script \"{path}\"\n\n{error.asString()}", context));
             return result.success(new nothing());
@@ -2309,7 +2334,7 @@ namespace ezrSquared.Values
             this.interpreter = new interpreter();
         }
 
-        public override runtimeResult? execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             runtimeResult result = new runtimeResult();
             context newContext = generateContext();
@@ -2317,7 +2342,7 @@ namespace ezrSquared.Values
             result.register(checkAndPopulateArgs(argNames, args, newContext));
             if (result.shouldReturn()) return result;
 
-            item? value = result.register(interpreter.visit(bodyNode, newContext));
+            item? value = result.register(await interpreter.visit(bodyNode, newContext));
             if (result.shouldReturn() && result.functionReturnValue == null) return result;
 
             if (!shouldReturnNull && value != null)
@@ -2348,7 +2373,7 @@ namespace ezrSquared.Values
             this.interpreter = new interpreter();
         }
 
-        public override runtimeResult? execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             runtimeResult result = new runtimeResult();
             context newContext = generateContext();
@@ -2356,7 +2381,7 @@ namespace ezrSquared.Values
             result.register(checkAndPopulateArgs(argNames, args, newContext));
             if (result.shouldReturn()) return result;
 
-            item? value = result.register(interpreter.visit(bodyNode, newContext));
+            item? value = result.register(await interpreter.visit(bodyNode, newContext));
             if (result.shouldReturn() && result.functionReturnValue == null) return result;
 
             if (!shouldReturnNull && value != null)
@@ -2385,7 +2410,7 @@ namespace ezrSquared.Values
             this.parent = inherit;
         }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             runtimeResult result = new runtimeResult();
             context internalContext = generateContext();
@@ -2399,14 +2424,14 @@ namespace ezrSquared.Values
                 for (int i = 0; i < parentArgs.Length; i++)
                     parentArgs[i] = args[Array.IndexOf(argNames, parent.argNames[i])];
 
-                item parentObject = result.register(parent.execute(parentArgs));
+                item parentObject = result.register(await parent.execute(parentArgs));
                 if (result.shouldReturn()) return result;
 
                 internalContext.symbolTable.set("parent", parentObject);
             }
 
             @object object_ = (@object)new @object(name, internalContext).setPosition(startPos, endPos).setContext(context);
-            result.register(object_.initialize(bodyNode));
+            result.register(await object_.initialize(bodyNode));
             if (result.shouldReturn()) return result;
 
             return result.success(object_);
@@ -2429,270 +2454,428 @@ namespace ezrSquared.Values
             this.interpreter = new interpreter();
         }
 
-        public runtimeResult initialize(node body)
+        public async Task<runtimeResult> initialize(node body)
         {
             runtimeResult result = new runtimeResult();
             internalContext.symbolTable.set("this", this);
 
-            result.register(interpreter.visit(body, internalContext));
+            result.register(await interpreter.visit(body, internalContext));
             if (result.shouldReturn()) return result;
 
             return result.success(new nothing());
         }
 
-        private item? getOutput(item func, item[] args, out error? error)
+        private async Task<(item?, error?)> getOutput(item func, item[] args)
         {
-            error = null;
-
             runtimeResult result = new runtimeResult();
-            item output = result.register(func.execute(args));
-            if (result.shouldReturn() && result.error == null) return new nothing().setContext(context);
+            item output = result.register(await func.execute(args));
+            if (result.shouldReturn() && result.error == null) return (new nothing().setContext(context), null);
 
             if (result.error != null)
-            {
-                error = result.error;
-                return null;
-            }
-            return output;
+                return (null, result.error);
+            return (output, null);
         }
 
         public override item? compareEqual(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("compare_equal");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
 
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
+        
             return base.compareEqual(other, out error);
         }
-
+        
         public override item? compareNotEqual(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("compare_not_equal");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.compareNotEqual(other, out error);
         }
-
+        
         public override item? compareAnd(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("compare_and");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.compareAnd(other, out error);
         }
-
+        
         public override item? compareOr(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("compare_or");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.compareOr(other, out error);
         }
-
+        
         public override item? checkIn(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("check_in");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.checkIn(other, out error);
         }
-
+        
         public override item? bitwiseOrdTo(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("bitwise_or");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.bitwiseOrdTo(other, out error);
         }
-
+        
         public override item? bitwiseXOrdTo(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("bitwise_xor");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.bitwiseXOrdTo(other, out error);
         }
-
+        
         public override item? bitwiseAndedTo(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("bitwise_and");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.bitwiseAndedTo(other, out error);
         }
-
+        
         public override item? bitwiseLeftShiftedTo(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("bitwise_left_shift");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.bitwiseLeftShiftedTo(other, out error);
         }
-
+        
         public override item? bitwiseRightShiftedTo(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("bitwise_right_shift");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.bitwiseRightShiftedTo(other, out error);
         }
-
+        
         public override item? bitwiseNotted(out error? error)
         {
             item? func = internalContext.symbolTable.get("bitwise_not");
             if (func != null && func is special)
-                return getOutput(func, new item[0], out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[0]);
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.bitwiseNotted(out error);
         }
-
+        
         public override item? addedTo(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("addition");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.addedTo(other, out error);
         }
-
+        
         public override item? subbedBy(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("subtraction");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.subbedBy(other, out error);
         }
-
+        
         public override item? multedBy(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("multiplication");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.multedBy(other, out error);
         }
-
+        
         public override item? divedBy(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("division");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.divedBy(other, out error);
         }
-
+        
         public override item? modedBy(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("modulo");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.modedBy(other, out error);
         }
-
+        
         public override item? powedBy(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("power");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.powedBy(other, out error);
         }
-
+        
         public override item? compareLessThan(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("compare_less_than");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.compareLessThan(other, out error);
         }
-
+        
         public override item? compareGreaterThan(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("compare_greater_than");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.compareGreaterThan(other, out error);
         }
-
+        
         public override item? compareLessThanOrEqual(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("compare_less_than_or_equal");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.compareLessThanOrEqual(other, out error);
         }
-
+        
         public override item? compareGreaterThanOrEqual(item other, out error? error)
         {
             item? func = internalContext.symbolTable.get("compare_greater_than_or_equal");
             if (func != null && func is special)
-                return getOutput(func, new item[] { other }, out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[] { other });
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.compareGreaterThanOrEqual(other, out error);
         }
-
+        
         public override item? invert(out error? error)
         {
             item? func = internalContext.symbolTable.get("invert");
             if (func != null && func is special)
-                return getOutput(func, new item[0], out error);
+            {
+                Task<(item?, error?)> task = getOutput(func, new item[0]);
+                task.Wait();
+
+                (item? result, error? error_) = task.Result;
+                error = error_;
+                return result;
+            }
 
             return base.invert(out error);
         }
-
+        
         public override bool isTrue(out error? error)
         {
             item? func = internalContext.symbolTable.get("is_true");
             if (func != null && func is special)
             {
-                item? output = getOutput(func, new item[0], out error);
+                Task<(item?, error?)> task = getOutput(func, new item[0]);
+                task.Wait();
+
+                (item? output, error? error_) = task.Result;
+                error = error_;
+
                 if (error != null) return false;
                 return output.isTrue(out error);
             }
-
+        
             return base.isTrue(out error);
         }
-
+        
         public override int GetItemHashCode(out error? error)
         {
             error = null;
             item? func = internalContext.symbolTable.get("hash");
             if (func != null && func is special)
             {
-                item? output = getOutput(func, new item[0], out error);
-                if (error != null) return 0;
+                Task<(item?, error?)> task = getOutput(func, new item[0]);
+                task.Wait();
 
+                (item? output, error? error_) = task.Result;
+                error = error_;
+
+                if (error != null) return 0;
                 if (output is not integer)
                 {
                     error = new runtimeError(startPos, endPos, RT_TYPE, "Return type of special function \"hash\" must be an integer", context);
                     return 0;
                 }
-
+        
                 return ((integer)output).storedValue;
             }
-
+        
             return base.GetItemHashCode(out error);
         }
 
-        public override runtimeResult get(node node)
+        public override async Task<runtimeResult> get(node node)
         {
             runtimeResult result = new runtimeResult();
 
-            item value = result.register(interpreter.visit(node, internalContext));
+            item value = result.register(await interpreter.visit(node, internalContext));
             if (result.shouldReturn()) return result;
             return result.success(value);
         }
@@ -2709,11 +2892,16 @@ namespace ezrSquared.Values
         public override bool ItemEquals(item obj, out error? error)
         {
             error = null;
-
+        
             item? func = internalContext.symbolTable.get("equals");
             if (func != null && func is special)
             {
-                item? output = getOutput(func, new item[0], out error);
+                Task<(item?, error?)> task = getOutput(func, new item[0]);
+                task.Wait();
+
+                (item? output, error? error_) = task.Result;
+                error = error_;
+
                 if (error != null) return false;
                 return output.isTrue(out error);
             }
@@ -2721,10 +2909,10 @@ namespace ezrSquared.Values
             {
                 int hash = GetItemHashCode(out error);
                 if (error != null) return false;
-
+        
                 int otherHash = ((@object)obj).GetItemHashCode(out error);
                 if (error != null) return false;
-
+        
                 return hash == otherHash;
             }
             return false;

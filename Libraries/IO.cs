@@ -3,6 +3,7 @@ using ezrSquared.Helpers;
 using ezrSquared.Errors;
 using ezrSquared.General;
 using static ezrSquared.Constants.constants;
+using System.Threading.Tasks;
 using System.IO;
 using System;
 
@@ -12,7 +13,7 @@ namespace ezrSquared.Libraries.IO
     {
         public @file() : base("<io <file>>") { }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             context internalContext = base.generateContext();
             internalContext.symbolTable.set("exists", new predefined_function("file_exists", fileExists, new string[1] { "filepath" }));
@@ -226,7 +227,7 @@ namespace ezrSquared.Libraries.IO
     {
         public folder() : base("<io <folder>>") { }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             context internalContext = base.generateContext();
             internalContext.symbolTable.set("exists", new predefined_function("folder_exists", folderExists, new string[1] { "folderpath" }));
@@ -516,7 +517,7 @@ namespace ezrSquared.Libraries.IO
     {
         public path() : base("<io <path>>") { }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             context internalContext = base.generateContext();
 
