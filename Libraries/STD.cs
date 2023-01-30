@@ -3,6 +3,7 @@ using ezrSquared.Helpers;
 using ezrSquared.Errors;
 using ezrSquared.General;
 using static ezrSquared.Constants.constants;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 
@@ -76,13 +77,13 @@ namespace ezrSquared.Libraries.STD
             if (values is not list && values is not array)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Values must be a list or array", context));
 
-            item[] values_ = (values is list) ? ((list)values).storedValue.ToArray() : ((array)values).storedValue;
+            item[] values_ = (values is list) ? ((List<item>)((list)values).storedValue).ToArray() : (item[])((array)values).storedValue;
             string[] strings = new string[values_.Length];
             for (int i = 0; i < strings.Length; i++)
             {
                 if (values_[i] is not @string && values_[i] is not character_list)
                     return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "All items in values must be a string or character_list", context));
-                strings[i] = (values_[i] is @string) ? ((@string)values_[i]).storedValue : string.Join("", ((character_list)values_[i]).storedValue);
+                strings[i] = (values_[i] is @string) ? (string)((@string)values_[i]).storedValue : string.Join("", ((List<char>)((character_list)values_[i]).storedValue));
             }
 
             return result.success(new @string(string.Concat(strings)));
@@ -115,13 +116,13 @@ namespace ezrSquared.Libraries.STD
             if (values is not list && values is not array)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Values must be a list or array", context));
 
-            item[] values_ = (values is list) ? ((list)values).storedValue.ToArray() : ((array)values).storedValue;
+            item[] values_ = (values is list) ? ((List<item>)((list)values).storedValue).ToArray() : (item[])((array)values).storedValue;
             string[] strings = new string[values_.Length];
             for (int i = 0; i < strings.Length; i++)
             {
                 if (values_[i] is not @string && values_[i] is not character_list)
                     return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "All items in values must be a string or character_list", context));
-                strings[i] = (values_[i] is @string) ? ((@string)values_[i]).storedValue : string.Join("", ((character_list)values_[i]).storedValue);
+                strings[i] = (values_[i] is @string) ? (string)((@string)values_[i]).storedValue : string.Join("", ((List<char>)((character_list)values_[i]).storedValue));
             }
 
             return result.success(new character_list(string.Concat(strings)));

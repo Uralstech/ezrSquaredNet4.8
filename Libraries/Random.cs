@@ -35,9 +35,14 @@ namespace ezrSquared.Libraries.Random
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Minimum must be an integer or float", context));
             if (maximum is not integer && maximum is not @float)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Maximum must be an integer or float", context));
+            
+            if (minimum is @float && ((float)((value)minimum).storedValue > int.MaxValue || (float)((value)minimum).storedValue < int.MinValue))
+                return result.failure(new runtimeError(minimum.startPos, minimum.endPos, RT_OVERFLOW, "Value either too large or too small to be converted to an integer", context));
+            if (maximum is @float && ((float)((value)maximum).storedValue > int.MaxValue || (float)((value)maximum).storedValue < int.MinValue))
+                return result.failure(new runtimeError(maximum.startPos, maximum.endPos, RT_OVERFLOW, "Value either too large or too small to be converted to an integer", context));
 
-            int min = (minimum is integer) ? ((integer)minimum).storedValue : (int)((@float)minimum).storedValue;
-            int max = (maximum is integer) ? ((integer)maximum).storedValue : (int)((@float)maximum).storedValue;
+            int min = (minimum is integer) ? (int)((integer)minimum).storedValue : (int)((@float)minimum).storedValue;
+            int max = (maximum is integer) ? (int)((integer)maximum).storedValue : (int)((@float)maximum).storedValue;
             return result.success(new integer(random_.Next(min, max)));
         }
 

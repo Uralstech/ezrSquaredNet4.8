@@ -3001,9 +3001,9 @@ namespace ezrSquared.Main
             {
                 runtimeResult result = new runtimeResult();
                 List<item> elements = new List<item>();
-                dynamic i = 0;
-                dynamic length = 0;
-                dynamic step_ = 1;
+                int i = 0;
+                int length = 0;
+                int step_ = 1;
 
                 if (node.startValueNode != null)
                 {
@@ -3014,9 +3014,9 @@ namespace ezrSquared.Main
                         return result.failure(new runtimeError(start.startPos, start.endPos, RT_TYPE, "Count loop start must be an integer or float", context));
 
                     if (start is integer)
-                        i = ((integer)start).storedValue;
+                        i = (int)((integer)start).storedValue;
                     else
-                        i = ((@float)start).storedValue;
+                        i = (int)((@float)start).storedValue;
                 }
 
                 item end = result.register(await visit(node.endValueNode, context));
@@ -3026,9 +3026,9 @@ namespace ezrSquared.Main
                     return result.failure(new runtimeError(end.startPos, end.endPos, RT_TYPE, "Count loop end must be an integer or float", context));
 
                 if (end is integer)
-                    length = ((integer)end).storedValue;
+                    length = (int)((integer)end).storedValue;
                 else
-                    length = ((@float)end).storedValue;
+                    length = (int)((@float)end).storedValue;
 
                 if (node.stepValueNode != null)
                 {
@@ -3039,24 +3039,19 @@ namespace ezrSquared.Main
                         return result.failure(new runtimeError(step.startPos, step.endPos, RT_TYPE, "Count loop step must be an integer or float", context));
 
                     if (step is integer)
-                        step_ = ((integer)step).storedValue;
+                        step_ = (int)((integer)step).storedValue;
                     else
-                        step_ = ((@float)step).storedValue;
+                        step_ = (int)((@float)step).storedValue;
                 }
 
                 string? varName = null;
                 if (node.variableNameToken != null)
                     varName = node.variableNameToken.value.ToString();
 
-                for (var j = i; j < length; j += step_)
+                for (int j = i; j < length; j += step_)
                 {
                     if (varName != null)
-                    {
-                        if (step_ is float)
-                            context.symbolTable.set(varName, new @float(j));
-                        else if (step_ is int)
-                            context.symbolTable.set(varName, new integer((int)j));
-                    }
+                        context.symbolTable.set(varName, new integer(j));
 
                     item body = result.register(await visit(node.bodyNode, context));
                     if (result.shouldReturn() && !result.loopShouldSkip && !result.loopShouldStop) return result;
@@ -3133,7 +3128,7 @@ namespace ezrSquared.Main
                                         return result.failure(new runtimeError(catchTagToken.startPos, catchTagToken.endPos, RT_UNDEFINED, $"\"{catchTagToken.value}\" is not defined", context));
                                     else if (tag_ is not @string)
                                         return result.failure(new runtimeError(catchTagToken.startPos, catchTagToken.endPos, RT_UNDEFINED, $"Error tag must be a string", context));
-                                    catchTag = ((@string)tag_).storedValue;
+                                    catchTag = (string)((@string)tag_).storedValue;
                                 }
                                 else
                                     catchTag = catchTagToken.value.ToString();
@@ -3298,7 +3293,7 @@ namespace ezrSquared.Main
                             return result.failure(new runtimeError(node.nicknameToken.startPos, node.nicknameToken.endPos, RT_UNDEFINED, $"\"{node.nicknameToken.value}\" is not defined", context));
                         else if (nickname is not @string)
                             return result.failure(new runtimeError(node.nicknameToken.startPos, node.nicknameToken.endPos, RT_UNDEFINED, $"Nickname must be a string", context));
-                        name = ((@string)nickname).storedValue;
+                        name = (string)((@string)nickname).storedValue;
                     }
                 }
                 else
@@ -3337,11 +3332,11 @@ namespace ezrSquared.Main
                         if (mainLibClass == null)
                             return result.failure(new runtimeError(node.startPos, node.endPos, RT_IO, $"Could not find main library class in script \"{file}\"", context));
 
-                        dynamic? val = Activator.CreateInstance(mainLibClass);
+                        object val = Activator.CreateInstance(mainLibClass);
 
                         if (val is item)
                         {
-                            value = result.register(val.setPosition(node.startPos, node.endPos).setContext(context).execute(new item[0]));
+                            value = result.register(await ((item)val).setPosition(node.startPos, node.endPos).setContext(context).execute(new item[0]));
                             if (result.shouldReturn()) return result;
                         }
                         else
