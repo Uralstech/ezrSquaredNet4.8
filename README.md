@@ -10,6 +10,9 @@ to be used in other programs. Check out ezr² [here](https://github.com/Uralstech
 ### Released
 **Check the [GitHub Commits](https://github.com/Uralstech/ezrSquaredNet4.8/commits) for all changes in source code**
 
+* **prerelease-1.2.0.0.0** - [30-01-23]
+    * Removed all dynamic variables
+
 * **prerelease-1.1.0.0.0** - [27-01-23]
     * Converted all interpreter functions to async functions
 
