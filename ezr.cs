@@ -13,6 +13,7 @@ using System;
 
 using ezrSquared.Libraries.STD;
 using ezrSquared.Libraries.Random;
+using ezrSquared.Libraries.IO;
 
 namespace ezrSquared.Main
 {
@@ -3189,7 +3190,7 @@ namespace ezrSquared.Main
                 return result.success(special);
             }
 
-            private runtimeResult visit_objectDefinitionNode(objectDefinitionNode node, context context)
+            private async Task<runtimeResult> visit_objectDefinitionNode(objectDefinitionNode node, context context)
             {
                 runtimeResult result = new runtimeResult();
 
@@ -3409,10 +3410,15 @@ namespace ezrSquared.Main
                     predefinedSymbolTable.set("err_io", new @string(RT_IO));
 
                     position pos = new position(0, 0, 0, "<main>", "");
+                    predefinedSymbolTable.set("file", waitTask(new @file().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("folder", waitTask(new folder().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("path", waitTask(new path().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+
                     predefinedSymbolTable.set("integer", waitTask(new integer_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
                     predefinedSymbolTable.set("float", waitTask(new float_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
                     predefinedSymbolTable.set("string", waitTask(new string_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
                     predefinedSymbolTable.set("character_list", waitTask(new character_list_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+
                     predefinedSymbolTable.set("random", waitTask(new random().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
 
                     _globalPredefinedContext.symbolTable = predefinedSymbolTable;
