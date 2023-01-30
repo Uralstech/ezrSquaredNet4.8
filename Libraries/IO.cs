@@ -3,6 +3,8 @@ using ezrSquared.Helpers;
 using ezrSquared.Errors;
 using ezrSquared.General;
 using static ezrSquared.Constants.constants;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.IO;
 using System;
 
@@ -12,7 +14,7 @@ namespace ezrSquared.Libraries.IO
     {
         public @file() : base("<io <file>>") { }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             context internalContext = base.generateContext();
             internalContext.symbolTable.set("exists", new predefined_function("file_exists", fileExists, new string[1] { "filepath" }));
@@ -34,7 +36,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Filepath must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
             return result.success(new boolean(File.Exists(filepath)));
         }
 
@@ -46,7 +48,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Filepath must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
 
             try
             {
@@ -68,7 +70,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Filepath must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
             if (!File.Exists(filepath))
                 return result.failure(new runtimeError(positions[0], positions[1], RT_IO, $"File \"{filepath}\" does not exist", context));
 
@@ -92,7 +94,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Filepath must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
             if (!File.Exists(filepath))
                 return result.failure(new runtimeError(positions[0], positions[1], RT_IO, $"File \"{filepath}\" does not exist", context));
 
@@ -126,9 +128,9 @@ namespace ezrSquared.Libraries.IO
             if (mode is not @string && mode is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Mode must be a string or character_list", context));
 
-            string content_ = (content is @string) ? ((@string)content).storedValue.ToString() : string.Join("", ((character_list)content).storedValue);
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
-            string mode_ = ((mode is @string) ? ((@string)mode).storedValue.ToString() : string.Join("", ((character_list)mode).storedValue)).ToLower();
+            string content_ = (content is @string) ? ((@string)content).storedValue.ToString() : string.Join("", ((List<char>)((character_list)content).storedValue));
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
+            string mode_ = ((mode is @string) ? ((@string)mode).storedValue.ToString() : string.Join("", ((List<char>)((character_list)mode).storedValue))).ToLower();
 
             if (mode_ == "write")
             {
@@ -169,8 +171,8 @@ namespace ezrSquared.Libraries.IO
             if (to is not @string && to is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "To_path must be a string or character_list", context));
 
-            string from_ = (from is @string) ? ((@string)from).storedValue.ToString() : string.Join("", ((character_list)from).storedValue);
-            string to_ = (to is @string) ? ((@string)to).storedValue.ToString() : string.Join("", ((character_list)to).storedValue);
+            string from_ = (from is @string) ? ((@string)from).storedValue.ToString() : string.Join("", ((List<char>)((character_list)from).storedValue));
+            string to_ = (to is @string) ? ((@string)to).storedValue.ToString() : string.Join("", ((List<char>)((character_list)to).storedValue));
 
             if (!File.Exists(from_))
                 return result.failure(new runtimeError(positions[0], positions[1], RT_IO, $"File \"{from_}\" does not exist", context));
@@ -198,8 +200,8 @@ namespace ezrSquared.Libraries.IO
             if (to is not @string && to is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "To_path must be a string or character_list", context));
 
-            string from_ = (from is @string) ? ((@string)from).storedValue.ToString() : string.Join("", ((character_list)from).storedValue);
-            string to_ = (to is @string) ? ((@string)to).storedValue.ToString() : string.Join("", ((character_list)to).storedValue);
+            string from_ = (from is @string) ? ((@string)from).storedValue.ToString() : string.Join("", ((List<char>)((character_list)from).storedValue));
+            string to_ = (to is @string) ? ((@string)to).storedValue.ToString() : string.Join("", ((List<char>)((character_list)to).storedValue));
 
             if (!File.Exists(from_))
                 return result.failure(new runtimeError(positions[0], positions[1], RT_IO, $"File \"{from_}\" does not exist", context));
@@ -226,7 +228,7 @@ namespace ezrSquared.Libraries.IO
     {
         public folder() : base("<io <folder>>") { }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             context internalContext = base.generateContext();
             internalContext.symbolTable.set("exists", new predefined_function("folder_exists", folderExists, new string[1] { "folderpath" }));
@@ -252,7 +254,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Folderpath must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
             return result.success(new boolean(Directory.Exists(filepath)));
         }
 
@@ -264,7 +266,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Folderpath must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
 
             try
             {
@@ -286,7 +288,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Folderpath must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
             if (!Directory.Exists(filepath))
                 return result.failure(new runtimeError(positions[0], positions[1], RT_IO, $"Folder \"{filepath}\" does not exist", context));
 
@@ -310,7 +312,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Folderpath must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
             if (!Directory.Exists(filepath))
                 return result.failure(new runtimeError(positions[0], positions[1], RT_IO, $"Folder \"{filepath}\" does not exist", context));
 
@@ -338,7 +340,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Folderpath must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
             if (!Directory.Exists(filepath))
                 return result.failure(new runtimeError(positions[0], positions[1], RT_IO, $"Folder \"{filepath}\" does not exist", context));
 
@@ -366,7 +368,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Folderpath must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
             if (!Directory.Exists(filepath))
                 return result.failure(new runtimeError(positions[0], positions[1], RT_IO, $"Folder \"{filepath}\" does not exist", context));
 
@@ -394,7 +396,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Folderpath must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
             if (!Directory.Exists(filepath))
                 return result.failure(new runtimeError(positions[0], positions[1], RT_IO, $"Folder \"{filepath}\" does not exist", context));
 
@@ -419,7 +421,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Folderpath must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
             if (!Directory.Exists(filepath))
                 return result.failure(new runtimeError(positions[0], positions[1], RT_IO, $"Folder \"{filepath}\" does not exist", context));
 
@@ -447,8 +449,8 @@ namespace ezrSquared.Libraries.IO
             if (to is not @string && to is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "To_path must be a string or character_list", context));
 
-            string from_ = (from is @string) ? ((@string)from).storedValue.ToString() : string.Join("", ((character_list)from).storedValue);
-            string to_ = (to is @string) ? ((@string)to).storedValue.ToString() : string.Join("", ((character_list)to).storedValue);
+            string from_ = (from is @string) ? ((@string)from).storedValue.ToString() : string.Join("", ((List<char>)((character_list)from).storedValue));
+            string to_ = (to is @string) ? ((@string)to).storedValue.ToString() : string.Join("", ((List<char>)((character_list)to).storedValue));
 
             if (!Directory.Exists(from_))
                 return result.failure(new runtimeError(positions[0], positions[1], RT_IO, $"Folder \"{from_}\" does not exist", context));
@@ -490,7 +492,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Folderpath must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
             if (!Directory.Exists(filepath))
                 return result.failure(new runtimeError(positions[0], positions[1], RT_IO, $"Folder \"{filepath}\" does not exist", context));
 
@@ -516,7 +518,7 @@ namespace ezrSquared.Libraries.IO
     {
         public path() : base("<io <path>>") { }
 
-        public override runtimeResult execute(item[] args)
+        public override async Task<runtimeResult> execute(item[] args)
         {
             context internalContext = base.generateContext();
 
@@ -552,7 +554,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
             return result.success(new boolean(File.Exists(filepath) || Directory.Exists(filepath)));
         }
 
@@ -564,13 +566,13 @@ namespace ezrSquared.Libraries.IO
             if (paths is not list && paths is not array)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Paths must be a list or array", context));
 
-            item[] paths_ = (paths is list) ? ((list)paths).storedValue.ToArray() : ((array)paths).storedValue;
+            item[] paths_ = (paths is list) ? ((List<item>)((list)paths).storedValue).ToArray() : (item[])((array)paths).storedValue;
             string[] filepaths = new string[paths_.Length];
             for (int i = 0; i < paths_.Length; i++)
             {
                 if (paths_[i] is not @string && paths_[i] is not character_list)
                     return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "All elements of paths must be strings or character_lists", context));
-                filepaths[i] = (paths_[i] is @string) ? ((@string)paths_[i]).storedValue : string.Join("", ((character_list)paths_[i]).storedValue);
+                filepaths[i] = (paths_[i] is @string) ? (string)((@string)paths_[i]).storedValue : string.Join("", ((List<char>)((character_list)paths_[i]).storedValue));
             }
 
             string newPath = "";
@@ -591,8 +593,8 @@ namespace ezrSquared.Libraries.IO
             if (path2 is not @string && path2 is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path_2 must be a string or character_list", context));
 
-            string filepath1 = (path1 is @string) ? ((@string)path1).storedValue.ToString() : string.Join("", ((character_list)path1).storedValue);
-            string filepath2 = (path2 is @string) ? ((@string)path2).storedValue.ToString() : string.Join("", ((character_list)path2).storedValue);
+            string filepath1 = (path1 is @string) ? ((@string)path1).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path1).storedValue));
+            string filepath2 = (path2 is @string) ? ((@string)path2).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path2).storedValue));
             return result.success(new @string(Path.Combine(filepath1, filepath2)));
         }
 
@@ -604,7 +606,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
             return result.success(new boolean(Path.HasExtension(filepath)));
         }
 
@@ -616,7 +618,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
 
             string? extension = Path.GetExtension(filepath);
             return result.success((extension != null) ? new @string(extension) : new nothing());
@@ -633,8 +635,8 @@ namespace ezrSquared.Libraries.IO
             if (extension is not @string && extension is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Extension must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
-            string extension_ = (extension is @string) ? ((@string)extension).storedValue.ToString() : string.Join("", ((character_list)extension).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
+            string extension_ = (extension is @string) ? ((@string)extension).storedValue.ToString() : string.Join("", ((List<char>)((character_list)extension).storedValue));
 
             string? newPath = Path.ChangeExtension(filepath, extension_);
             return result.success((newPath != null) ? new @string(newPath) : new nothing());
@@ -648,7 +650,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
 
             string? folder;
             try
@@ -671,7 +673,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
 
             string? filename;
             try
@@ -694,7 +696,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
 
             string? filename;
             try
@@ -717,7 +719,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
 
             string filepath_;
             try
@@ -740,7 +742,7 @@ namespace ezrSquared.Libraries.IO
             if (path is not @string && path is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
 
-            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
+            string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
 
             string? filepath_;
             try
@@ -789,46 +791,46 @@ namespace ezrSquared.Libraries.IO
             return result.success(new @string(filepath));
         }
 
-        //private runtimeResult relativePath(context context, position[] positions)
-        //{
-        //    runtimeResult result = new runtimeResult();
-        //
-        //    item relativeTo = context.symbolTable.get("relative_to");
-        //    if (relativeTo is not @string && relativeTo is not character_list)
-        //        return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Relative_to must be a string or character_list", context));
-        //    item path = context.symbolTable.get("path");
-        //    if (path is not @string && path is not character_list)
-        //        return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
-        //
-        //    string relativeTo_ = (relativeTo is @string) ? ((@string)relativeTo).storedValue.ToString() : string.Join("", ((character_list)relativeTo).storedValue);
-        //    string path_ = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
-        //
-        //    return result.success(new @string(Path.GetRelativePath(relativeTo_, path_)));
-        //}
-        //
-        //private runtimeResult pathEndsInFolderSeperator(context context, position[] positions)
-        //{
-        //    runtimeResult result = new runtimeResult();
-        //
-        //    item path = context.symbolTable.get("path");
-        //    if (path is not @string && path is not character_list)
-        //        return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
-        //
-        //    string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
-        //    return result.success(new boolean(Path.EndsInDirectorySeparator(filepath)));
-        //}
-        //
-        //private runtimeResult removeLastFolderSeperatorOfPath(context context, position[] positions)
-        //{
-        //    runtimeResult result = new runtimeResult();
-        //
-        //    item path = context.symbolTable.get("path");
-        //    if (path is not @string && path is not character_list)
-        //        return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
-        //
-        //    string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((character_list)path).storedValue);
-        //    return result.success(new @string(Path.TrimEndingDirectorySeparator(filepath)));
-        //}
+        // private runtimeResult relativePath(context context, position[] positions)
+        // {
+        //     runtimeResult result = new runtimeResult();
+        // 
+        //     item relativeTo = context.symbolTable.get("relative_to");
+        //     if (relativeTo is not @string && relativeTo is not character_list)
+        //         return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Relative_to must be a string or character_list", context));
+        //     item path = context.symbolTable.get("path");
+        //     if (path is not @string && path is not character_list)
+        //         return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
+        // 
+        //     string relativeTo_ = (relativeTo is @string) ? ((@string)relativeTo).storedValue.ToString() : string.Join("", ((List<char>)((character_list)relativeTo).storedValue));
+        //     string path_ = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
+        // 
+        //     return result.success(new @string(Path.GetRelativePath(relativeTo_, path_)));
+        // }
+        // 
+        // private runtimeResult pathEndsInFolderSeperator(context context, position[] positions)
+        // {
+        //     runtimeResult result = new runtimeResult();
+        // 
+        //     item path = context.symbolTable.get("path");
+        //     if (path is not @string && path is not character_list)
+        //         return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
+        // 
+        //     string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
+        //     return result.success(new boolean(Path.EndsInDirectorySeparator(filepath)));
+        // }
+        // 
+        // private runtimeResult removeLastFolderSeperatorOfPath(context context, position[] positions)
+        // {
+        //     runtimeResult result = new runtimeResult();
+        // 
+        //     item path = context.symbolTable.get("path");
+        //     if (path is not @string && path is not character_list)
+        //         return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Path must be a string or character_list", context));
+        // 
+        //     string filepath = (path is @string) ? ((@string)path).storedValue.ToString() : string.Join("", ((List<char>)((character_list)path).storedValue));
+        //     return result.success(new @string(Path.TrimEndingDirectorySeparator(filepath)));
+        // }
 
         public override item copy() { return new path().setPosition(startPos, endPos).setContext(context); }
 

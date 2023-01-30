@@ -10,11 +10,25 @@ to be used in other programs. Check out ezr² [here](https://github.com/Uralstech
 ### Released
 **Check the [GitHub Commits](https://github.com/Uralstech/ezrSquaredNet4.8/commits) for all changes in source code**
 
+* **prerelease-1.2.0.1.0** - [31-01-23]
+    * Added back IO library
+    * Fixed bug in interpreter - visit_objectDefinitionNode now returns Task\<runtimeResult>
+
+* **prerelease-1.2.0.0.1** - [30-01-23]
+    * Fixed bug in `character_list` type - all `storedValue` references should now be casted to List\<char>
+    * Fixed hashing and comparison for all types
+
+* **prerelease-1.2.0.0.0** - [30-01-23]
+    * Removed all dynamic variables
+
+* **prerelease-1.1.0.0.0** - [27-01-23]
+    * Converted all interpreter functions to async functions
+
 * **prerelease-1.0.0.0.2** - [26-01-23]
-    * Removed useless `using` for IO library
+    * Removed useless using for IO library
 
 * **prerelease-1.0.0.0.1** - [26-01-23]
-    * Fixed array slicing
+    * Fixed `array` slicing
 
 * **prerelease-1.0.0.0.0** - [26-01-23]
     * Initial release!
