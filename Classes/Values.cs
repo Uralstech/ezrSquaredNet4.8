@@ -386,8 +386,6 @@ namespace ezrSquared.Values
         }
 
         public override string ToString() { return storedValue.ToString(); }
-        public override bool ItemEquals(item obj, out error? error) { error = null; if (GetType() == obj.GetType()) return storedValue == ((value)obj).storedValue; return false; }
-        public override int GetItemHashCode(out error? error) { error = null; return storedValue.GetHashCode(); }
     }
 
     public class boolean : value
@@ -418,6 +416,8 @@ namespace ezrSquared.Values
         public override item copy() { return new boolean((bool)storedValue).setPosition(startPos, endPos).setContext(context); }
 
         public override string ToString() { return base.ToString().ToLower(); }
+        public override bool ItemEquals(item obj, out error? error) { error = null; if (GetType() == obj.GetType()) return (bool)storedValue == (bool)((value)obj).storedValue; return false; }
+        public override int GetItemHashCode(out error? error) { error = null; return ((bool)storedValue).GetHashCode(); }
     }
 
     public class nothing : value
@@ -443,6 +443,7 @@ namespace ezrSquared.Values
         public override item copy() { return new nothing().setPosition(startPos, endPos).setContext(context); }
 
         public override string ToString() { return "nothing"; }
+        public override bool ItemEquals(item obj, out error? error) { error = null; return GetType() == obj.GetType(); }
         public override int GetItemHashCode(out error? error) { error = null; return 0; }
     }
 
@@ -670,6 +671,9 @@ namespace ezrSquared.Values
 
         public override bool isTrue(out error? error) { error = null; return (int)storedValue != 0; }
         public override item copy() { return new integer((int)storedValue).setPosition(startPos, endPos).setContext(context); }
+
+        public override bool ItemEquals(item obj, out error? error) { error = null; if (GetType() == obj.GetType()) return (int)storedValue == (int)((value)obj).storedValue; return false; }
+        public override int GetItemHashCode(out error? error) { error = null; return ((int)storedValue).GetHashCode(); }
     }
 
     public class @float : value
@@ -845,6 +849,9 @@ namespace ezrSquared.Values
 
         public override bool isTrue(out error? error) { error = null; return (float)storedValue != 0f; }
         public override item copy() { return new @float((float)storedValue).setPosition(startPos, endPos).setContext(context); }
+
+        public override bool ItemEquals(item obj, out error? error) { error = null; if (GetType() == obj.GetType()) return (float)storedValue == (float)((value)obj).storedValue; return false; }
+        public override int GetItemHashCode(out error? error) { error = null; return ((float)storedValue).GetHashCode(); }
     }
 
     public class @string : value
@@ -1126,6 +1133,8 @@ namespace ezrSquared.Values
 
         public override string ToString() { return $"\"{storedValue}\""; }
         public string ToPureString() { return (string)storedValue; }
+        public override bool ItemEquals(item obj, out error? error) { error = null; if (GetType() == obj.GetType()) return (string)storedValue == (string)((value)obj).storedValue; return false; }
+        public override int GetItemHashCode(out error? error) { error = null; return ((string)storedValue).GetHashCode(); }
     }
 
     public class character_list : value
@@ -1230,9 +1239,9 @@ namespace ezrSquared.Values
         {
             error = null;
             if (other is @string)
-                return new boolean(((string)((@string)other).storedValue).Contains(string.Join("", storedValue))).setContext(context);
+                return new boolean(((string)((@string)other).storedValue).Contains(string.Join("", (List<char>)storedValue))).setContext(context);
             else if (other is character_list)
-                return new boolean(string.Join("", ((List<char>)((character_list)other).storedValue)).Contains(string.Join("", storedValue))).setContext(context);
+                return new boolean(string.Join("", ((List<char>)((character_list)other).storedValue)).Contains(string.Join("", (List<char>)storedValue))).setContext(context);
             return base.checkIn(other, out error);
         }
     
@@ -1379,7 +1388,7 @@ namespace ezrSquared.Values
         private runtimeResult asInteger(context context, position[] positions)
         {
             runtimeResult result = new runtimeResult();
-            if (int.TryParse(string.Join("", storedValue), out int integer))
+            if (int.TryParse(string.Join("", (List<char>)storedValue), out int integer))
                 return result.success(new integer(integer));
             return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Could not convert string to integer", context));
         }
@@ -1387,7 +1396,7 @@ namespace ezrSquared.Values
         private runtimeResult asFloat(context context, position[] positions)
         {
             runtimeResult result = new runtimeResult();
-            if (float.TryParse(string.Join("", storedValue), out float float_))
+            if (float.TryParse(string.Join("", (List<char>)storedValue), out float float_))
                 return result.success(new @float(float_));
             return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Could not convert string to float", context));
         }
@@ -1395,7 +1404,7 @@ namespace ezrSquared.Values
         private runtimeResult tryAsInteger(context context, position[] positions)
         {
             runtimeResult result = new runtimeResult();
-            if (int.TryParse(string.Join("", storedValue), out int integer))
+            if (int.TryParse(string.Join("", (List<char>)storedValue), out int integer))
                 return result.success(new integer(integer));
             return result.success(new nothing());
         }
@@ -1403,7 +1412,7 @@ namespace ezrSquared.Values
         private runtimeResult tryAsFloat(context context, position[] positions)
         {
             runtimeResult result = new runtimeResult();
-            if (float.TryParse(string.Join("", storedValue), out float float_))
+            if (float.TryParse(string.Join("", (List<char>)storedValue), out float float_))
                 return result.success(new @float(float_));
             return result.success(new nothing());
         }
@@ -1411,7 +1420,7 @@ namespace ezrSquared.Values
         private runtimeResult asBoolean(context context, position[] positions)
         {
             runtimeResult result = new runtimeResult();
-            if (bool.TryParse(string.Join("", storedValue), out bool bool_))
+            if (bool.TryParse(string.Join("", (List<char>)storedValue), out bool bool_))
                 return result.success(new boolean(bool_));
             return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Could not convert string to boolean", context));
         }
@@ -1419,12 +1428,12 @@ namespace ezrSquared.Values
         private runtimeResult tryAsBoolean(context context, position[] positions)
         {
             runtimeResult result = new runtimeResult();
-            if (bool.TryParse(string.Join("", storedValue), out bool bool_))
+            if (bool.TryParse(string.Join("", (List<char>)storedValue), out bool bool_))
                 return result.success(new boolean(bool_));
             return result.success(new nothing());
         }
     
-        private runtimeResult asString(context context, position[] positions) { return new runtimeResult().success(new @string(string.Join("", storedValue))); }
+        private runtimeResult asString(context context, position[] positions) { return new runtimeResult().success(new @string(string.Join("", (List<char>)storedValue))); }
         private runtimeResult asBooleanValue(context context, position[] positions)
         {
             runtimeResult result = new runtimeResult();
@@ -1434,14 +1443,16 @@ namespace ezrSquared.Values
             return result.success(new boolean(boolValue));
         }
     
-        private runtimeResult isNullOrEmpty(context context, position[] positions) { return new runtimeResult().success(new boolean(string.IsNullOrEmpty(string.Join("", storedValue)))); }
-        private runtimeResult isNullOrSpaces(context context, position[] positions) { return new runtimeResult().success(new boolean(string.IsNullOrWhiteSpace(string.Join("", storedValue)))); }
+        private runtimeResult isNullOrEmpty(context context, position[] positions) { return new runtimeResult().success(new boolean(string.IsNullOrEmpty(string.Join("", (List<char>)storedValue)))); }
+        private runtimeResult isNullOrSpaces(context context, position[] positions) { return new runtimeResult().success(new boolean(string.IsNullOrWhiteSpace(string.Join("", (List<char>)storedValue)))); }
     
         public override bool isTrue(out error? error) { error = null; return ((List<char>)storedValue).Count > 0; }
         public override item copy() { return new character_list((List<char>)storedValue).setPosition(startPos, endPos).setContext(context); }
     
-        public override string ToString() { return $"'{string.Join("", storedValue)}'"; }
-        public string ToPureString() { return string.Join("", storedValue); }
+        public override string ToString() { return $"'{string.Join("", (List<char>)storedValue)}'"; }
+        public string ToPureString() { return string.Join("", (List<char>)storedValue); }
+        public override bool ItemEquals(item obj, out error? error) { error = null; if (GetType() == obj.GetType()) return ToPureString() == ((character_list)obj).ToPureString(); return false; }
+        public override int GetItemHashCode(out error? error) { error = null; return ToPureString().GetHashCode(); }
     }
 
     public class array : value
