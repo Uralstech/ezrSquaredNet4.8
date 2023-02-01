@@ -1177,7 +1177,7 @@ namespace ezrSquared.Values
                     return null;
                 }
 
-                ((List<char>)storedValue).RemoveAt((int)otherValue.storedValue);
+                ((List<char>)storedValue).RemoveAt(((otherValue is @float) ? (int)((float)otherValue.storedValue) : (int)otherValue.storedValue));
                 return new nothing().setContext(context);
             }
 
@@ -1252,8 +1252,8 @@ namespace ezrSquared.Values
                     error = new runtimeError(other.startPos, other.endPos, RT_MATH, "Index cannot be greater than or equal to length of character_list", context);
                     return null;
                 }
-    
-                return new @string(((List<char>)storedValue)[(int)((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue)].ToString()).setContext(context);
+
+                return new @string(((List<char>)storedValue)[((otherValue is @float) ? (int)((float)otherValue.storedValue) : (int)otherValue.storedValue)].ToString()).setContext(context);
             }
     
             error = illegalOperation(other);
@@ -1539,7 +1539,7 @@ namespace ezrSquared.Values
                     return null;
                 }
 
-                return ((item[])storedValue)[(int)((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue)].setContext(context);
+                return ((item[])storedValue)[((otherValue is @float) ? (int)((float)otherValue.storedValue) : (int)otherValue.storedValue)].setContext(context);
             }
 
             error = illegalOperation(other);
@@ -1679,7 +1679,7 @@ namespace ezrSquared.Values
                 }
 
                 item removedValue = ((List<item>)storedValue)[(int)((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue)];
-                ((List<item>)storedValue).RemoveAt((int)((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue));
+                ((List<item>)storedValue).RemoveAt(((otherValue is @float) ? (int)((float)otherValue.storedValue) : (int)otherValue.storedValue));
                 return removedValue.setContext(context);
             }
 
@@ -1755,7 +1755,7 @@ namespace ezrSquared.Values
                     return null;
                 }
 
-                return ((List<item>)storedValue)[(int)((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue)].setContext(context);
+                return ((List<item>)storedValue)[((otherValue is @float) ? (int)((float)otherValue.storedValue) : (int)otherValue.storedValue)].setContext(context);
             }
 
             error = illegalOperation(other);

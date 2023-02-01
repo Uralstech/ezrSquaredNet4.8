@@ -10,6 +10,9 @@ to be used in other programs. Check out ezr² [here](https://github.com/Uralstech
 ### Released
 **Check the [GitHub Commits](https://github.com/Uralstech/ezrSquaredNet4.8/commits) for all changes in source code**
 
+* **prerelease-1.3.0.0.1** - [01-02-23]
+    * Fixed operators `remove` and `get` in character_list, list and array - ezr² would crash if input was a float
+
 * **prerelease-1.3.0.0.0** - [01-02-23]
     * Added `remove` operation to character_list
     * Removed `remove_at` function in character_list and list as they are redundant - use the `remove` operation
