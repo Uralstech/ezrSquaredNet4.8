@@ -218,9 +218,9 @@ namespace ezrSquared.Values
         {
             error = null;
             if (other is list)
-                return new boolean(((list)other).hasElement(this)).setContext(context);
+                return new boolean(((list)other).hasElement(this, out error)).setContext(context);
             else if (other is array)
-                return new boolean(((array)other).hasElement(this)).setContext(context);
+                return new boolean(((array)other).hasElement(this, out error)).setContext(context);
 
             error = illegalOperation();
             return null;
@@ -328,11 +328,10 @@ namespace ezrSquared.Values
             error = illegalOperation();
             return null;
         }
-
-        public virtual async Task<runtimeResult> execute(item[] args) { return new runtimeResult().failure(illegalOperation()); }
-        public virtual async Task<runtimeResult> get(node node) { return new runtimeResult().failure(illegalOperation()); }
-        public virtual runtimeResult set(string name, item variable) { return new runtimeResult().failure(illegalOperation()); }
-
+        public virtual async Task<runtimeResult> execute(item[] args) { return new runtimeResult().failure(new runtimeError(startPos, endPos, RT_ILLEGALOP, "\"execute\" method called on unsupported object", context)); }
+        public virtual async Task<runtimeResult> get(node node) { return new runtimeResult().failure(new runtimeError(node.startPos, node.endPos, RT_ILLEGALOP, "\"get\" method called on unsupported object", context)); }
+        public virtual runtimeResult set(string name, item variable) { return new runtimeResult().failure(new runtimeError(startPos, endPos, RT_ILLEGALOP, "\"set\" method called on unsupported object", context)); }
+        
         public virtual item copy() { throw new Exception($"No copy method defined for \"{GetType().Name}\"!"); }
 
         public error illegalOperation(item? other = null)
@@ -382,7 +381,7 @@ namespace ezrSquared.Values
                 return result.success(value);
             }
 
-            return result.failure(new runtimeError(node.startPos, node.endPos, RT_ILLEGALOP, "\"retrieve' method called on uninitialized object", context));
+            return await base.get(node);
         }
 
         public override string ToString() { return storedValue.ToString(); }
@@ -919,12 +918,12 @@ namespace ezrSquared.Values
                 value otherValue = (value)other;
                 if (((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue) < 0)
                 {
-                    error = new runtimeError(other.startPos, other.endPos, RT_MATH, "Index cannot be negative value", context);
+                    error = new runtimeError(other.startPos, other.endPos, RT_INDEX, "Index cannot be negative value", context);
                     return null;
                 }
                 else if (((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue) >= ((string)storedValue).Length)
                 {
-                    error = new runtimeError(other.startPos, other.endPos, RT_MATH, "Index cannot be greater than or equal to length of string", context);
+                    error = new runtimeError(other.startPos, other.endPos, RT_INDEX, "Index cannot be greater than or equal to length of string", context);
                     return null;
                 }
                 else if (otherValue is @float && (float)otherValue.storedValue > int.MaxValue)
@@ -989,11 +988,11 @@ namespace ezrSquared.Values
             int endAsInt = (int)((integer)end).storedValue;
 
             if (startAsInt < 0)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Start cannot be less than zero", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Start cannot be less than zero", context));
             else if (endAsInt > storedValue.ToString().Length)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "End cannot be greater than length of string", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "End cannot be greater than length of string", context));
             else if (startAsInt > endAsInt)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Start cannot be greater than end", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Start cannot be greater than end", context));
 
             return result.success(new @string(storedValue.ToString().Substring(startAsInt, endAsInt)));
         }
@@ -1012,9 +1011,9 @@ namespace ezrSquared.Values
             int startAsInt = (int)((integer)start).storedValue;
 
             if (startAsInt < 0)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Index cannot be less than zero", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Index cannot be less than zero", context));
             else if (startAsInt > storedValue.ToString().Length)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Index cannot be greater than length of string", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Index cannot be greater than length of string", context));
 
             return result.success(new @string(storedValue.ToString().Insert(startAsInt, ((@string)substring).storedValue.ToString())));
         }
@@ -1168,17 +1167,18 @@ namespace ezrSquared.Values
                 value otherValue = (value)other;
                 if (((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue) < 0)
                 {
-                    error = new runtimeError(other.startPos, other.endPos, RT_MATH, "Index cannot be negative value", context);
+                    error = new runtimeError(other.startPos, other.endPos, RT_INDEX, "Index cannot be negative value", context);
                     return null;
                 }
                 else if (((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue) >= ((List<char>)storedValue).Count)
                 {
-                    error = new runtimeError(other.startPos, other.endPos, RT_MATH, "Index cannot be greater than or equal to length of character_list", context);
+                    error = new runtimeError(other.startPos, other.endPos, RT_INDEX, "Index cannot be greater than or equal to length of character_list", context);
                     return null;
                 }
 
+                string removed = ((List<char>)storedValue)[(int)otherValue.storedValue].ToString();
                 ((List<char>)storedValue).RemoveAt(((otherValue is @float) ? (int)((float)otherValue.storedValue) : (int)otherValue.storedValue));
-                return new nothing().setContext(context);
+                return new @string(removed).setContext(context);
             }
 
             error = illegalOperation(other);
@@ -1244,12 +1244,12 @@ namespace ezrSquared.Values
                 value otherValue = (value)other;
                 if (((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue) < 0)
                 {
-                    error = new runtimeError(other.startPos, other.endPos, RT_MATH, "Index cannot be negative value", context);
+                    error = new runtimeError(other.startPos, other.endPos, RT_INDEX, "Index cannot be negative value", context);
                     return null;
                 }
                 else if (((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue) >= ((List<char>)storedValue).Count)
                 {
-                    error = new runtimeError(other.startPos, other.endPos, RT_MATH, "Index cannot be greater than or equal to length of character_list", context);
+                    error = new runtimeError(other.startPos, other.endPos, RT_INDEX, "Index cannot be greater than or equal to length of character_list", context);
                     return null;
                 }
 
@@ -1307,11 +1307,11 @@ namespace ezrSquared.Values
             int endAsInt = (int)((integer)end).storedValue + 1;
     
             if (startAsInt < 0)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Start cannot be less than zero", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Start cannot be less than zero", context));
             else if (endAsInt > ((List<char>)storedValue).Count)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "End cannot be greater than length of character_list", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "End cannot be greater than length of character_list", context));
             else if (startAsInt >= endAsInt - 1)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Start cannot be greater than or equal to end", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Start cannot be greater than or equal to end", context));
     
             return result.success(new character_list(((List<char>)storedValue).GetRange(startAsInt, endAsInt - startAsInt)));
         }
@@ -1328,18 +1328,15 @@ namespace ezrSquared.Values
             int indexAsInt = (int)((integer)index).storedValue;
     
             if (indexAsInt < 0)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Index cannot be less than zero", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Index cannot be less than zero", context));
             else if (indexAsInt > ((List<char>)storedValue).Count)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Index cannot be greater than length of character_list", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Index cannot be greater than length of character_list", context));
     
             if (value is not @string && value is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Value must be a string or character_list", context));
-    
-            string value_ = (value is @string) ? (string)((@string)value).storedValue : string.Join("", ((List<char>)((character_list)value).storedValue));
-            if (value_.Length > 1 || value_.Length < 1)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Value must be of length 1", context));
-    
-            ((List<char>)storedValue).Insert(indexAsInt, value_[0]);
+
+            char[] value_ = (value is @string) ? ((string)((@string)value).storedValue).ToCharArray() : ((List<char>)((character_list)value).storedValue).ToArray();
+            ((List<char>)storedValue).InsertRange(indexAsInt, value_);
             return result.success(new nothing());
         }
     
@@ -1355,16 +1352,16 @@ namespace ezrSquared.Values
             int indexAsInt = (int)((integer)index).storedValue;
     
             if (indexAsInt < 0)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Index cannot be less than zero", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Index cannot be less than zero", context));
             else if (indexAsInt >= ((List<char>)storedValue).Count)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Index cannot be greater than length of character_list", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Index cannot be greater than length of character_list", context));
     
             if (value is not @string && value is not character_list)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Value must be a string or character_list", context));
     
             string value_ = (value is @string) ? (string)((@string)value).storedValue : string.Join("", ((List<char>)((character_list)value).storedValue));
             if (value_.Length > 1 || value_.Length < 1)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Value must be of length 1", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_LEN, "Value must be of length 1", context));
     
             ((List<char>)storedValue)[indexAsInt] = value_[0];
             return result.success(new nothing());
@@ -1379,14 +1376,10 @@ namespace ezrSquared.Values
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Value must be a string or character_list", context));
     
             string value_ = (value is @string) ? (string)((@string)value).storedValue : string.Join("", ((List<char>)((character_list)value).storedValue));
-            if (value_.Length > 1 || value_.Length < 1)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Value must be of length 1", context));
-    
-            char charValue = value_[0];
-            if (!((List<char>)storedValue).Contains(charValue))
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "CharacterList does not contain value", context));
-    
-            ((List<char>)storedValue).Remove(charValue);
+            char[] chars = string.Join("", ((List<char>)storedValue)).Replace(value_, string.Empty).ToCharArray();
+            
+            ((List<char>)storedValue).Clear();
+            ((List<char>)storedValue).AddRange(chars);
             return result.success(new nothing());
         }
     
@@ -1464,10 +1457,14 @@ namespace ezrSquared.Values
     {
         public array(item[] elements) : base(elements) { }
 
-        public bool hasElement(item other)
+        public bool hasElement(item other, out error? error)
         {
+            error = null;
             for (int i = 0; i < ((item[])storedValue).Length; i++)
-                if (((item[])storedValue)[i].Equals(other)) return true;
+            {
+                if (((item[])storedValue)[i].ItemEquals(other, out error)) return true;
+                if (error != null) return false;
+            }
             return false;
         }
 
@@ -1530,12 +1527,12 @@ namespace ezrSquared.Values
                 value otherValue = (value)other;
                 if (((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue) < 0)
                 {
-                    error = new runtimeError(other.startPos, other.endPos, RT_MATH, "Index cannot be negative value", context);
+                    error = new runtimeError(other.startPos, other.endPos, RT_INDEX, "Index cannot be negative value", context);
                     return null;
                 }
                 else if (((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue) >= ((item[])storedValue).Length)
                 {
-                    error = new runtimeError(other.startPos, other.endPos, RT_MATH, "Index cannot be greater than or equal to length of array", context);
+                    error = new runtimeError(other.startPos, other.endPos, RT_INDEX, "Index cannot be greater than or equal to length of array", context);
                     return null;
                 }
 
@@ -1573,11 +1570,11 @@ namespace ezrSquared.Values
             int endAsInt = (int)((integer)end).storedValue + 1;
 
             if (startAsInt < 0)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Start cannot be less than zero", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Start cannot be less than zero", context));
             else if (endAsInt > ((item[])storedValue).Length)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "End cannot be greater than length of array", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "End cannot be greater than length of array", context));
             else if (startAsInt > endAsInt)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Start cannot be greater than end", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Start cannot be greater than end", context));
 
             return result.success(new array(((item[])storedValue).Skip(startAsInt).Take(endAsInt).ToArray()));
         }
@@ -1640,10 +1637,14 @@ namespace ezrSquared.Values
         public list(item[] elements) : base(elements.ToList()) { }
         public list(List<item> elements) : base(elements) { }
 
-        public bool hasElement(item other)
+        public bool hasElement(item other, out error? error)
         {
+            error = null;
             for (int i = 0; i < ((List<item>)storedValue).Count; i++)
-                if (((List<item>)storedValue)[i].Equals(other)) return true;
+            {
+                if (((List<item>)storedValue)[i].ItemEquals(other, out error)) return true;
+                if (error != null) return false;
+            }
             return false;
         }
 
@@ -1669,12 +1670,12 @@ namespace ezrSquared.Values
                 value otherValue = (value)other;
                 if (((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue) < 0)
                 {
-                    error = new runtimeError(other.startPos, other.endPos, RT_MATH, "Index cannot be negative value", context);
+                    error = new runtimeError(other.startPos, other.endPos, RT_INDEX, "Index cannot be negative value", context);
                     return null;
                 }
                 else if (((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue) >= ((List<item>)storedValue).Count)
                 {
-                    error = new runtimeError(other.startPos, other.endPos, RT_MATH, "Index cannot be greater than or equal to length of list", context);
+                    error = new runtimeError(other.startPos, other.endPos, RT_INDEX, "Index cannot be greater than or equal to length of list", context);
                     return null;
                 }
 
@@ -1746,12 +1747,12 @@ namespace ezrSquared.Values
                 value otherValue = (value)other;
                 if (((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue) < 0)
                 {
-                    error = new runtimeError(other.startPos, other.endPos, RT_MATH, "Index cannot be negative value", context);
+                    error = new runtimeError(other.startPos, other.endPos, RT_INDEX, "Index cannot be negative value", context);
                     return null;
                 }
                 else if (((otherValue is @float) ? (float)otherValue.storedValue : (int)otherValue.storedValue) >= ((List<item>)storedValue).Count)
                 {
-                    error = new runtimeError(other.startPos, other.endPos, RT_MATH, "Index cannot be greater than or equal to length of list", context);
+                    error = new runtimeError(other.startPos, other.endPos, RT_INDEX, "Index cannot be greater than or equal to length of list", context);
                     return null;
                 }
 
@@ -1792,11 +1793,11 @@ namespace ezrSquared.Values
             int endAsInt = (int)((integer)end).storedValue + 1;
 
             if (startAsInt < 0)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Start cannot be less than zero", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Start cannot be less than zero", context));
             else if (endAsInt > ((List<item>)storedValue).Count)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "End cannot be greater than length of list", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "End cannot be greater than length of list", context));
             else if (startAsInt >= endAsInt - 1)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Start cannot be greater than or equal to end", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Start cannot be greater than or equal to end", context));
 
             return result.success(new list(((List<item>)storedValue).GetRange(startAsInt, endAsInt - startAsInt)));
         }
@@ -1813,9 +1814,9 @@ namespace ezrSquared.Values
             int indexAsInt = (int)((integer)index).storedValue;
 
             if (indexAsInt < 0)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Index cannot be less than zero", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Index cannot be less than zero", context));
             else if (indexAsInt > ((List<item>)storedValue).Count)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Index cannot be greater than length of list", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Index cannot be greater than length of list", context));
 
             ((List<item>)storedValue).Insert(indexAsInt, value);
             return result.success(new nothing());
@@ -1833,9 +1834,9 @@ namespace ezrSquared.Values
             int indexAsInt = (int)((integer)index).storedValue;
 
             if (indexAsInt < 0)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Index cannot be less than zero", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Index cannot be less than zero", context));
             else if (indexAsInt >= ((List<item>)storedValue).Count)
-                return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Index cannot be greater than length of list", context));
+                return result.failure(new runtimeError(positions[0], positions[1], RT_INDEX, "Index cannot be greater than length of list", context));
 
             ((List<item>)storedValue)[indexAsInt] = value;
             return result.success(new nothing());
