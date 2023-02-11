@@ -10,6 +10,10 @@ to be used in other programs. Check out ezr² [here](https://github.com/Uralstech
 ### Released
 **Check the [GitHub Commits](https://github.com/Uralstech/ezrSquaredNet4.8/commits) for all changes in source code**
 
+* **prerelease-1.4.0.0.1** - [12-02-23]
+    * Fixed `remove` function in character_lists
+    * Fixed `in` expression in lists
+
 * **prerelease-1.4.0.0.0** - [12-02-23]
     * Parity to ezrSquared
  

@@ -1376,7 +1376,7 @@ namespace ezrSquared.Values
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Value must be a string or character_list", context));
     
             string value_ = (value is @string) ? (string)((@string)value).storedValue : string.Join("", ((List<char>)((character_list)value).storedValue));
-            char[] chars = string.Join("", storedValue).Replace(value_, string.Empty).ToCharArray();
+            char[] chars = string.Join("", ((List<char>)storedValue)).Replace(value_, string.Empty).ToCharArray();
             
             ((List<char>)storedValue).Clear();
             ((List<char>)storedValue).AddRange(chars);
@@ -1642,7 +1642,7 @@ namespace ezrSquared.Values
             error = null;
             for (int i = 0; i < ((List<item>)storedValue).Count; i++)
             {
-                if (((item[])storedValue)[i].ItemEquals(other, out error)) return true;
+                if (((List<item>)storedValue)[i].ItemEquals(other, out error)) return true;
                 if (error != null) return false;
             }
             return false;
