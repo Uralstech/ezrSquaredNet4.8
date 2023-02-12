@@ -26,7 +26,7 @@ namespace ezrSquared.Errors
             int end = text.IndexOf('\n', start + 1);
             if (end == -1) end = text.Length;
 
-            string result = text.Substring(start, end) + '\n';
+            string result = text.Substring(start, end - start) + '\n';
             for (int i = 0; i < startPos.column; i++)
                 result += ' ';
             for (int i = 0; i < endPos.column - startPos.column; i++)
