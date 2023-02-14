@@ -5,10 +5,14 @@
 to be used in other programs. Check out ezr² [here](https://github.com/Uralstech/ezrSquared).
 
 ## Progress
-**For those confused by the versioning: 1st place -> Major; 2nd place -> Feature; 3rd place -> Function; 4th place -> Library; 5th place -> Patch**
+**For those confused by the versioning: 1st place -> Major; 2nd place -> Feature; 3rd place -> Quality of Life; 4th place -> Library; 5th place -> Patch**
 
 ### Released
 **Check the [GitHub Commits](https://github.com/Uralstech/ezrSquaredNet4.8/commits) for all changes in source code**
+
+* **prerelease-1.4.1.0.0** - [15-02-23]
+    * Fixed a count loop error message
+    * Better error message for else if statements
 
 * **prerelease-1.4.0.0.2** - [12-02-23]
     * Fixed a bug in error messages

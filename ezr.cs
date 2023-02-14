@@ -1230,7 +1230,11 @@ namespace ezrSquared.Main
                             }
 
                             if (!currentToken.matchString(TOKENTYPE.KEY, "do"))
-                                return result.failure(new invalidGrammarError("Expected 'do'", currentToken.startPos, currentToken.endPos));
+                            {
+                                if (isElseIf)
+                                    return result.failure(new invalidGrammarError("Expected 'do'", currentToken.startPos, currentToken.endPos));
+                                return result.failure(new invalidGrammarError("Expected 'if' or 'do'", currentToken.startPos, currentToken.endPos));
+                            }
                             result.registerAdvance();
                             advance();
 
@@ -1282,7 +1286,11 @@ namespace ezrSquared.Main
                     }
 
                     if (!currentToken.matchString(TOKENTYPE.KEY, "do"))
-                        return result.failure(new invalidGrammarError("Expected 'do'", currentToken.startPos, currentToken.endPos));
+                    {
+                        if (isElseIf)
+                            return result.failure(new invalidGrammarError("Expected 'do'", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected 'if' or 'do'", currentToken.startPos, currentToken.endPos));
+                    }
                     result.registerAdvance();
                     advance();
 
@@ -1326,7 +1334,7 @@ namespace ezrSquared.Main
                 if (!currentToken.matchString(TOKENTYPE.KEY, "to"))
                 {
                     if (start != null)
-                        return result.failure(new invalidGrammarError("Expected 'from'", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected 'to'", currentToken.startPos, currentToken.endPos));
                     return result.failure(new invalidGrammarError("Expected 'from' or 'to'", currentToken.startPos, currentToken.endPos));
                 }
                 result.registerAdvance();
