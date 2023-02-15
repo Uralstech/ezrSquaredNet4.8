@@ -2311,7 +2311,7 @@ namespace ezrSquared.Values
 
             (error? error, item? _) = await run(Path.GetFileName(path), path, script, runtimeContext);
             if (error != null)
-                return result.failure(new runtimeError(startPos, endPos, RT_RUN, $"Failed to execute script \"{path}\"\n\n{error.asString()}", context));
+                return result.failure(new runtimeRunError(startPos, endPos, $"Failed to execute script \"{path}\"", error.asString(), context));
             return result.success(new nothing());
         }
 

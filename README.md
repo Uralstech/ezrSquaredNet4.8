@@ -10,6 +10,10 @@ to be used in other programs. Check out ezr² [here](https://github.com/Uralstech
 ### Released
 **Check the [GitHub Commits](https://github.com/Uralstech/ezrSquaredNet4.8/commits) for all changes in source code**
 
+* **prerelease-1.5.0.0.0** - [15-02-23]
+    * Added flag to stop program at next visit function call
+    * Better errors with new runtimeRunError and interruptError classes
+
 * **prerelease-1.4.1.0.0** - [15-02-23]
     * Fixed a count loop error message
     * Better error message for else if statements
