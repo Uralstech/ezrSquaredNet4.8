@@ -90,7 +90,7 @@ namespace ezrSquared.Errors
         private string runError;
         public runtimeRunError(position startPos, position endPos, string details, string runError, context context) : base(startPos, endPos, RT_RUN, details, context) { this.runError = runError; }
 
-        public override string asString() { return $"{generateTraceback()}(runtime error) : {details} -> tag '{name}'\n\n{runError}\n\n{stringWithUnderline(startPos.text, startPos, endPos)}"; }
+        public override string asString() { return $"{generateTraceback()}(runtime error) : {details} -> tag '{name}'\n\n{stringWithUnderline(startPos.text, startPos, endPos)}\n\n{runError}"; }
     }
 
     public class interruptError : error
