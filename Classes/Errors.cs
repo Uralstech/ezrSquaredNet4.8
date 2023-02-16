@@ -1,24 +1,35 @@
 ﻿using ezrSquared.General;
+using static ezrSquared.Constants.constants;
 using System;
 
 namespace ezrSquared.Errors
 {
     public abstract class error
     {
-        public string name;
-        public string details;
-        public position startPos;
-        public position endPos;
+        internal string name;
+        internal string details;
 
-        public error(string name, string details, position startPos, position endPos)
+        public error(string name, string details)
         {
             this.name = name;
             this.details = details;
+        }
+
+        public virtual string asString() { return $"(error) {name}: {details}"; }
+    }
+
+    public abstract class positionBasedError : error
+    {
+        internal position startPos;
+        internal position endPos;
+
+        public positionBasedError(string name, string details, position startPos, position endPos) : base(name, details)
+        {
             this.startPos = startPos;
             this.endPos = endPos;
         }
 
-        public virtual string asString() { return $"(error) {name}: {details} -> File '{startPos.file}', line {startPos.line + 1}\n{stringWithUnderline(startPos.text, startPos, endPos)}"; }
+        public override string asString() { return $"{base.asString()} -> File '{startPos.file}', line {startPos.line + 1}\n{stringWithUnderline(startPos.text, startPos, endPos)}"; }
 
         internal string stringWithUnderline(string text, position startPos, position endPos)
         {
@@ -35,29 +46,29 @@ namespace ezrSquared.Errors
         }
     }
 
-    public class unknownCharacterError : error
+    public class unknownCharacterError : positionBasedError
     {
         public unknownCharacterError(string details, position startPos, position endPos) : base("Unknown character", details, startPos, endPos) { }
     }
 
-    public class invalidGrammarError : error
+    public class invalidGrammarError : positionBasedError
     {
         public invalidGrammarError(string details, position startPos, position endPos) : base("Invalid grammar", details, startPos, endPos) { }
     }
 
-    public class overflowError : error
+    public class overflowError : positionBasedError
     {
         public overflowError(string details, position startPos, position endPos) : base("Overflow", details, startPos, endPos) { }
     }
 
-    public class runtimeError : error
+    public class runtimeError : positionBasedError
     {
-        public context context;
+        private context context;
         public runtimeError(position startPos, position endPos, string tag, string details, context context) : base(tag, details, startPos, endPos) { this.context = context; }
 
         public override string asString() { return $"{generateTraceback()}(runtime error) : {details} -> tag '{name}'\n\n{stringWithUnderline(startPos.text, startPos, endPos)}"; }
 
-        private string generateTraceback()
+        internal string generateTraceback()
         {
             string result = "";
             position? pos = startPos;
@@ -72,5 +83,18 @@ namespace ezrSquared.Errors
 
             return $"Traceback - most recent call last:\n{result}";
         }
+    }
+
+    public class runtimeRunError : runtimeError
+    {
+        private string runError;
+        public runtimeRunError(position startPos, position endPos, string details, string runError, context context) : base(startPos, endPos, RT_RUN, details, context) { this.runError = runError; }
+
+        public override string asString() { return $"{generateTraceback()}(runtime error) : {details} -> tag '{name}'\n\n{stringWithUnderline(startPos.text, startPos, endPos)}\n\n{runError}"; }
+    }
+
+    public class interruptError : error
+    {
+        public interruptError() : base("Interrupt error", "Execution interrupted") { }
     }
 }

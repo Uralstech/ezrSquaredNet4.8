@@ -2688,6 +2688,9 @@ namespace ezrSquared.Main
 
             public async Task<runtimeResult> visit(node node, context context)
             {
+                if (MainEscapeFlag)
+                    return new runtimeResult().failure(new interruptError());
+
                 string nodeName = node.GetType().Name;
                 string methodName = $"visit_{nodeName}";
                 MethodInfo? info = GetType().GetMethod(methodName, (BindingFlags.NonPublic | BindingFlags.Instance));
@@ -3373,7 +3376,7 @@ namespace ezrSquared.Main
                     }
                     catch (Exception exception)
                     {
-                        return result.failure(new runtimeError(node.startPos, node.endPos, RT_RUN, $"Failed to execute script \"{file}\"\n{exception.Message}", context));
+                        return result.failure(new runtimeRunError(node.startPos, node.endPos, $"Failed to execute script \"{file}\"", exception.Message, context));
                     }
                 }
                 else
@@ -3390,11 +3393,11 @@ namespace ezrSquared.Main
 
                     token[] tokens = new lexer(file, script).compileTokens(out error? error);
                     if (error != null)
-                        return result.failure(new runtimeError(node.startPos, node.endPos, RT_RUN, $"Failed to execute script \"{file}\"\n\n{error.asString()}", context));
+                        return result.failure(new runtimeRunError(node.startPos, node.endPos, $"Failed to execute script \"{file}\"", error.asString(), context));
 
                     parseResult parseResult = new parser(tokens).parse();
                     if (parseResult.error != null)
-                        return result.failure(new runtimeError(node.startPos, node.endPos, RT_RUN, $"Failed to execute script \"{file}\"\n\n{parseResult.error.asString()}", context));
+                        return result.failure(new runtimeRunError(node.startPos, node.endPos, $"Failed to execute script \"{file}\"", parseResult.error.asString(), context));
 
                     value = result.register(await new @class(formattedFileName, null, parseResult.node, new string[0]).setPosition(node.startPos, node.endPos).setContext(context).execute(new item[0]));
                     if (result.shouldReturn()) return result;
@@ -3459,6 +3462,7 @@ namespace ezrSquared.Main
         }
 
         public static List<string> LOCALLIBPATHS = new List<string>();
+        public static bool MainEscapeFlag = false;
 
         public static async Task<(error?, item?)> run(string file, string? path, string input, context runtimeContext)
         {
