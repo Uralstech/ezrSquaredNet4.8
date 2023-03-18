@@ -2,7 +2,7 @@
 
 ## What is ezr² Net4.8?
 **This is not the main repo of ezr².** This is a clone of ezr² made with `DotNet 4.8` and `C# 9.0` as a `class library`,
-to be used in other programs. Check out ezr² [here](https://github.com/Uralstech/ezrSquared).
+to be used in other programs. Check out ezr² here: https://uralstech.github.io/ezrSquared. For API documentation check out https://uralstech.github.io/ezrSquared/CSAELs.html.
 
 ## Progress
 **For those confused by the versioning: 1st place -> Major; 2nd place -> Feature; 3rd place -> Quality of Life; 4th place -> Library; 5th place -> Patch**
