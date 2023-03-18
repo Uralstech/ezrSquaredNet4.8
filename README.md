@@ -5,10 +5,10 @@
 to be used in other programs. Check out ezr² here: https://uralstech.github.io/ezrSquared. For API documentation check out https://uralstech.github.io/ezrSquared/CSAELs.html.
 
 ## Progress
-**For those confused by the versioning: 1st place -> Major; 2nd place -> Feature; 3rd place -> Quality of Life; 4th place -> Library; 5th place -> Patch**
-
-### Released
 **Check the [GitHub Commits](https://github.com/Uralstech/ezrSquaredNet4.8/commits) for all changes in source code**
+
+* **prerelease-1.5.2.0.0** - [18-03-23]
+    * Parity with ezr² prerelease-1.3.3.0.0
 
 * **prerelease-1.5.1.0.0** - [16-02-23]
     * runtimeRunError message parity with ezr²

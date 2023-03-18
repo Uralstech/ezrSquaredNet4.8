@@ -3238,13 +3238,13 @@ namespace ezrSquared.Main
                     if (parent == null)
                         return result.failure(new runtimeError(node.inheritanceToken.startPos, node.inheritanceToken.endPos, RT_UNDEFINED, $"\"{node.inheritanceToken.value}\" is not defined", context));
                     else if (parent is not @class)
-                        return result.failure(new runtimeError(node.inheritanceToken.startPos, node.inheritanceToken.endPos, RT_TYPE, $"\"{node.inheritanceToken.value}\" is not a class", context));
+                        return result.failure(new runtimeError(node.inheritanceToken.startPos, node.inheritanceToken.endPos, RT_TYPE, $"Parent must be a class", context));
                     inheritFrom = (@class)parent;
 
                     for (int i = 0; i < inheritFrom.argNames.Length; i++)
                     {
                         if (!argNames.Contains(inheritFrom.argNames[i]))
-                            return result.failure(new runtimeError(node.inheritanceToken.startPos, node.inheritanceToken.endPos, RT_TYPE, "Parent must be a class", context));
+                            return result.failure(new runtimeError(node.startPos, node.endPos, RT_UNDEFINED, $"Parent argument \"{inheritFrom.argNames[i]}\" is not defined", context));
                     }
                 }
 
@@ -3446,6 +3446,7 @@ namespace ezrSquared.Main
                     predefinedSymbolTable.set("file", waitTask(new @file().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
                     predefinedSymbolTable.set("folder", waitTask(new folder().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
                     predefinedSymbolTable.set("path", waitTask(new path().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("console", new console().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0]).value);
 
                     predefinedSymbolTable.set("integer", waitTask(new integer_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
                     predefinedSymbolTable.set("float", waitTask(new float_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
