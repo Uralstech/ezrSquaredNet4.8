@@ -345,6 +345,7 @@ namespace ezrSquared.Libraries.IO
             { ConsoleColor.Yellow, "yellow" },
             { ConsoleColor.White, "white" }
         };
+        public override bool UPDATEONACCESS => true;
 
         public console() : base("<io <console>>") { }
 
@@ -567,6 +568,7 @@ namespace ezrSquared.Libraries.IO
 
     public class @file : baseFunction
     {
+        public override bool UPDATEONACCESS => true;
         public @file() : base("<io <file>>") { }
 
         public override async Task<runtimeResult> execute(item[] args)
@@ -781,6 +783,7 @@ namespace ezrSquared.Libraries.IO
 
     public class folder : baseFunction
     {
+        public override bool UPDATEONACCESS => true;
         public folder() : base("<io <folder>>") { }
 
         public override async Task<runtimeResult> execute(item[] args)
@@ -1071,6 +1074,7 @@ namespace ezrSquared.Libraries.IO
 
     public class path : baseFunction
     {
+        public override bool UPDATEONACCESS => true;
         public path() : base("<io <path>>") { }
 
         public override async Task<runtimeResult> execute(item[] args)

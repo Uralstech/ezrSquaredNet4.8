@@ -167,6 +167,7 @@ namespace ezrSquared.Values
         public position? startPos;
         public position? endPos;
         public context? context;
+        public virtual bool UPDATEONACCESS => false;
 
         public item() { }
 
@@ -177,7 +178,7 @@ namespace ezrSquared.Values
             return this;
         }
 
-        public item setContext(context? context)
+        public virtual item setContext(context? context)
         {
             this.context = context;
             return this;
@@ -358,6 +359,7 @@ namespace ezrSquared.Values
         public object storedValue;
         public context? internalContext;
         private interpreter interpreter;
+        public override bool UPDATEONACCESS => true;
 
         public value(object storedValue)
         {
@@ -2334,7 +2336,7 @@ namespace ezrSquared.Values
             context runtimeContext = new context("<main>", globalPredefinedContext, new position(0, 0, 0, "<main>", ""), false);
             runtimeContext.symbolTable = new symbolTable(globalPredefinedContext.symbolTable);
 
-            (error? error, item? _) = await run(Path.GetFileName(path), path, script, runtimeContext);
+            (error? error, item? _) = await easyRun(Path.GetFileName(path), path, script, runtimeContext);
             if (error != null)
                 return result.failure(new runtimeRunError(startPos, endPos, $"Failed to execute script \"{path}\"", error.asString(), context));
             return result.success(new nothing());
@@ -2490,6 +2492,14 @@ namespace ezrSquared.Values
             if (result.shouldReturn()) return result;
 
             return result.success(new nothing());
+        }
+
+        public override item setContext(context? context)
+        {
+            base.setContext(context);
+            internalContext.parent = context;
+            internalContext.symbolTable.parent = context.symbolTable;
+            return this;
         }
 
         private async Task<(item?, error?)> getOutput(item func, item[] args)

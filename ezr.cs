@@ -2858,7 +2858,7 @@ namespace ezrSquared.Main
                 item object_ = result.register(await visit(binOpNode.leftNode, context));
                 if (result.shouldReturn()) return result;
 
-                if (object_ is value)
+                if (object_.UPDATEONACCESS)
                     object_ = result.register(await object_.execute(new item[0]));
                 if (result.shouldReturn()) return result;
 
@@ -2911,7 +2911,7 @@ namespace ezrSquared.Main
                 if (node.operatorToken.type == TOKENTYPE.PERIOD)
                 {
                     left = left.copy().setPosition(node.startPos, node.endPos);
-                    if (left is value)
+                    if (left.UPDATEONACCESS)
                         left = result.register(await left.execute(new item[0]));
                     if (result.shouldReturn()) return result;
 
@@ -3410,16 +3410,17 @@ namespace ezrSquared.Main
         }
 
         private static context _globalPredefinedContext = new context("<GLC>", null, null, true);
+
+        private static runtimeResult waitTask(Task<runtimeResult> task)
+        {
+            task.Wait();
+            return task.Result;
+        }
+
         public static context globalPredefinedContext
         {
             get
             {
-                runtimeResult waitTask(Task<runtimeResult> task)
-                {
-                    task.Wait();
-                    return task.Result;
-                }
-
                 if (_globalPredefinedContext.symbolTable == null)
                 {
                     symbolTable predefinedSymbolTable = new symbolTable();
@@ -3427,7 +3428,7 @@ namespace ezrSquared.Main
                     predefinedSymbolTable.set("true", new boolean(true));
                     predefinedSymbolTable.set("false", new boolean(false));
 
-                    predefinedSymbolTable.set("version__", new @string(VERSION));
+                    predefinedSymbolTable.set("version__", new @string(VERSION_COMPAT));
 
                     predefinedSymbolTable.set("err_any", new @string(RT_DEFAULT));
                     predefinedSymbolTable.set("err_illegalop", new @string(RT_ILLEGALOP));
@@ -3442,19 +3443,6 @@ namespace ezrSquared.Main
                     predefinedSymbolTable.set("err_overflow", new @string(RT_OVERFLOW));
                     predefinedSymbolTable.set("err_length", new @string(RT_LEN));
 
-                    position pos = new position(0, 0, 0, "<main>", "");
-                    predefinedSymbolTable.set("file", waitTask(new @file().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
-                    predefinedSymbolTable.set("folder", waitTask(new folder().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
-                    predefinedSymbolTable.set("path", waitTask(new path().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
-                    predefinedSymbolTable.set("console", new console().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0]).value);
-
-                    predefinedSymbolTable.set("integer", waitTask(new integer_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
-                    predefinedSymbolTable.set("float", waitTask(new float_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
-                    predefinedSymbolTable.set("string", waitTask(new string_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
-                    predefinedSymbolTable.set("character_list", waitTask(new character_list_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
-
-                    predefinedSymbolTable.set("random", waitTask(new random().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
-
                     _globalPredefinedContext.symbolTable = predefinedSymbolTable;
                 }
 
@@ -3465,11 +3453,29 @@ namespace ezrSquared.Main
         public static List<string> LOCALLIBPATHS = new List<string>();
         public static bool MainEscapeFlag = false;
 
-        public static async Task<(error?, item?)> run(string file, string? path, string input, context runtimeContext)
+        public static async Task<(error?, item?)> easyRun(string file, string? path, string input, context runtimeContext)
         {
             if (!string.IsNullOrEmpty(path))
                 LOCALLIBPATHS.Add(path);
 
+            position pos = new position(0, 0, 0, "<main>", "");
+            _globalPredefinedContext.symbolTable.set("file", waitTask(new @file().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+            _globalPredefinedContext.symbolTable.set("folder", waitTask(new folder().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+            _globalPredefinedContext.symbolTable.set("path", waitTask(new path().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+            _globalPredefinedContext.symbolTable.set("console", waitTask(new console().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+
+            _globalPredefinedContext.symbolTable.set("integer", waitTask(new integer_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+            _globalPredefinedContext.symbolTable.set("float", waitTask(new float_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+            _globalPredefinedContext.symbolTable.set("string", waitTask(new string_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+            _globalPredefinedContext.symbolTable.set("character_list", waitTask(new character_list_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+
+            _globalPredefinedContext.symbolTable.set("random", waitTask(new random().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+
+            return await simpleRun(file, input, runtimeContext);
+        }
+
+        public static async Task<(error?, item?)> simpleRun(string file, string input, context runtimeContext)
+        {
             lexer lexer = new lexer(file, input);
             token[] tokens = lexer.compileTokens(out error? error);
             if (error != null) return (error, null);

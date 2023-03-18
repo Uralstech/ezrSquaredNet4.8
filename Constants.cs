@@ -4,7 +4,7 @@ namespace ezrSquared.Constants
 {
     public static class constants
     {
-        public const string VERSION = "prerelease-1.5.2.0.0";
+        public const string VERSION_COMPAT = "prerelease-1.3.3.0.1";
         public const string VERSION_DATE = "18.03.2023";
 
         public const string LETTERS_UNDERSCORE = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
