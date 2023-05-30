@@ -414,7 +414,7 @@ namespace ezrSquared.Values
         public override bool isTrue(out error? error) { error = null; return (bool)storedValue; }
         public override item copy() { return new boolean((bool)storedValue).setPosition(startPos, endPos).setContext(context); }
 
-        public override string ToString() { return base.ToString().ToLower(); }
+        public override string ToString() { return (bool)storedValue ? "സത്യം" : "തെറ്റ്"; }
         public override bool ItemEquals(item obj, out error? error) { error = null; if (GetType() == obj.GetType()) return (bool)storedValue == (bool)((value)obj).storedValue; return false; }
         public override int GetItemHashCode(out error? error) { error = null; return ((bool)storedValue).GetHashCode(); }
     }
@@ -441,7 +441,7 @@ namespace ezrSquared.Values
 
         public override item copy() { return new nothing().setPosition(startPos, endPos).setContext(context); }
 
-        public override string ToString() { return "nothing"; }
+        public override string ToString() { return "ഒന്നുമില്ല"; }
         public override bool ItemEquals(item obj, out error? error) { error = null; return GetType() == obj.GetType(); }
         public override int GetItemHashCode(out error? error) { error = null; return 0; }
     }
@@ -954,7 +954,7 @@ namespace ezrSquared.Values
             await base.execute(args);
 
             internalContext.symbolTable.set("length", new integer(storedValue.ToString().Length));
-            internalContext.symbolTable.set("slice", new predefined_function("string_slice", stringSlice, new string[2] { "start", "end" }));
+            internalContext.symbolTable.set("slice", new predefined_function("string_slice", stringSlice, new string[2] { "start", "അവസാനം" }));
             internalContext.symbolTable.set("insert", new predefined_function("string_insert", stringInsert, new string[2] { "index", "substring" }));
             internalContext.symbolTable.set("replace", new predefined_function("string_replace", stringReplace, new string[2] { "old", "new" }));
             internalContext.symbolTable.set("split", new predefined_function("string_split", stringSplit, new string[1] { "substring" }));
@@ -977,7 +977,7 @@ namespace ezrSquared.Values
         {
             runtimeResult result = new runtimeResult();
             item start = context.symbolTable.get("start");
-            item end = context.symbolTable.get("end");
+            item end = context.symbolTable.get("അവസാനം");
 
             if (start is not integer)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Start must be an integer", context));
@@ -1275,7 +1275,7 @@ namespace ezrSquared.Values
             await base.execute(args);
     
             internalContext.symbolTable.set("length", new integer(((List<char>)storedValue).Count));
-            internalContext.symbolTable.set("slice", new predefined_function("character_list_slice", charListSlice, new string[2] { "start", "end" }));
+            internalContext.symbolTable.set("slice", new predefined_function("character_list_slice", charListSlice, new string[2] { "start", "അവസാനം" }));
             internalContext.symbolTable.set("insert", new predefined_function("character_list_insert", charListInsert, new string[2] { "index", "value" }));
             internalContext.symbolTable.set("set", new predefined_function("character_list_set", charListSet, new string[2] { "index", "value" }));
             internalContext.symbolTable.set("remove", new predefined_function("character_list_remove", charListRemove, new string[1] { "value" }));
@@ -1296,7 +1296,7 @@ namespace ezrSquared.Values
         {
             runtimeResult result = new runtimeResult();
             item start = context.symbolTable.get("start");
-            item end = context.symbolTable.get("end");
+            item end = context.symbolTable.get("അവസാനം");
     
             if (start is not integer)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Start must be an integer", context));
@@ -1548,7 +1548,7 @@ namespace ezrSquared.Values
             await base.execute(args);
 
             internalContext.symbolTable.set("length", new integer(((item[])storedValue).Length));
-            internalContext.symbolTable.set("slice", new predefined_function("array_slice", arraySlice, new string[2] { "start", "end" }));
+            internalContext.symbolTable.set("slice", new predefined_function("array_slice", arraySlice, new string[2] { "start", "അവസാനം" }));
             internalContext.symbolTable.set("as_boolean", new predefined_function("array_as_boolean", asBoolean, new string[0] { }));
             internalContext.symbolTable.set("as_string", new predefined_function("array_as_string", asString, new string[0] { }));
             internalContext.symbolTable.set("as_character_list", new predefined_function("array_as_character_list", asCharList, new string[0] { }));
@@ -1559,7 +1559,7 @@ namespace ezrSquared.Values
         {
             runtimeResult result = new runtimeResult();
             item start = context.symbolTable.get("start");
-            item end = context.symbolTable.get("end");
+            item end = context.symbolTable.get("അവസാനം");
 
             if (start is not integer)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Start must be an integer", context));
@@ -1768,7 +1768,7 @@ namespace ezrSquared.Values
             await base.execute(args);
 
             internalContext.symbolTable.set("length", new integer(((List<item>)storedValue).Count));
-            internalContext.symbolTable.set("slice", new predefined_function("list_slice", listSlice, new string[2] { "start", "end" }));
+            internalContext.symbolTable.set("slice", new predefined_function("list_slice", listSlice, new string[2] { "start", "അവസാനം" }));
             internalContext.symbolTable.set("insert", new predefined_function("list_insert", listInsert, new string[2] { "index", "value" }));
             internalContext.symbolTable.set("set", new predefined_function("list_set", listSet, new string[2] { "index", "value" }));
             internalContext.symbolTable.set("remove", new predefined_function("list_remove", listRemove, new string[1] { "value" }));
@@ -1782,7 +1782,7 @@ namespace ezrSquared.Values
         {
             runtimeResult result = new runtimeResult();
             item start = context.symbolTable.get("start");
-            item end = context.symbolTable.get("end");
+            item end = context.symbolTable.get("അവസാനം");
 
             if (start is not integer)
                 return result.failure(new runtimeError(positions[0], positions[1], RT_TYPE, "Start must be an integer", context));
@@ -2208,7 +2208,7 @@ namespace ezrSquared.Values
             throw new Exception($"No {methodName} method defined!");
         }
 
-        private runtimeResult _show(context context)
+        private runtimeResult _കാണിക്കുക(context context)
         {
             item value = context.symbolTable.get("message");
             if (value is @string)
@@ -2221,7 +2221,7 @@ namespace ezrSquared.Values
             return new runtimeResult().success(new nothing());
         }
 
-        private runtimeResult _show_error(context context)
+        private runtimeResult _പിശക്_കാണിക്കുക(context context)
         {
             runtimeResult result = new runtimeResult();
 
@@ -2239,7 +2239,7 @@ namespace ezrSquared.Values
             return new runtimeResult().failure(new runtimeError(startPos, endPos, tg, msg, context));
         }
 
-        private runtimeResult _get(context context)
+        private runtimeResult _നേടുക(context context)
         {
             item message = context.symbolTable.get("message");
             if (message is not nothing)
@@ -2256,13 +2256,13 @@ namespace ezrSquared.Values
             return new runtimeResult().success(new @string(input == null ? "" : input));
         }
 
-        private runtimeResult _clear(context context)
+        private runtimeResult _മായ്ക്കുക(context context)
         {
             Console.Clear();
             return new runtimeResult().success(new nothing());
         }
 
-        private runtimeResult _hash(context context)
+        private runtimeResult _ക്രമഫലം(context context)
         {
             runtimeResult result = new runtimeResult();
 
@@ -2272,7 +2272,7 @@ namespace ezrSquared.Values
             return result.success(new integer(hash));
         }
 
-        private runtimeResult _type_of(context context)
+        private runtimeResult _തരം(context context)
         {
             item value = context.symbolTable.get("value");
 
@@ -2285,7 +2285,7 @@ namespace ezrSquared.Values
             return new runtimeResult().success(new @string(type));
         }
 
-        private async Task<runtimeResult> _run(context context)
+        private async Task<runtimeResult> _നിർവഹിക്കുക(context context)
         {
             runtimeResult result = new runtimeResult();
             item file = context.symbolTable.get("file");
@@ -2816,7 +2816,7 @@ namespace ezrSquared.Values
         
         public override item? invert(out error? error)
         {
-            item? func = internalContext.symbolTable.get("invert");
+            item? func = internalContext.symbolTable.get("വിപരീതം");
             if (func != null && func is special)
             {
                 Task<(item?, error?)> task = getOutput(func, new item[0]);

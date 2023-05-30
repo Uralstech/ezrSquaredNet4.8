@@ -78,9 +78,9 @@ namespace ezrSquared.Main
                         tokens.Add(compileGreaterThan());
                     else if (currentChar == '-')
                         tokens.Add(compileMinus());
-                    else if (LETTERS_UNDERSCORE.Contains((char)currentChar))
+                    else if (char.IsLetter((char)currentChar) || ALPHABET.Contains((char)currentChar) || (char)currentChar == '_')
                         tokens.Add(compileIdentifier());
-                    else if (DIGITS.Contains((char)currentChar))
+                    else if (char.IsDigit((char)currentChar))
                     {
                         token? token = compileNumber(out error);
                         if (error != null) return emptyTokenArray;
@@ -374,7 +374,7 @@ namespace ezrSquared.Main
                 string idString = "";
                 position startPos = pos.copy();
 
-                while (currentChar != null && ALPHANUM_UNDERSCORE.Contains((char)currentChar))
+                while (currentChar != null && (char.IsLetterOrDigit((char)currentChar) || ALPHABET.Contains((char)currentChar) || (char)currentChar == '_'))
                 {
                     idString += currentChar;
                     advance();
@@ -391,7 +391,7 @@ namespace ezrSquared.Main
                 position startPos = pos.copy();
                 int periodCount = 0;
 
-                while (currentChar != null && DIGITS_PERIOD.Contains((char)currentChar))
+                while (currentChar != null && (char.IsDigit((char)currentChar) || currentChar == '.'))
                 {
                     bool wasCharPeriod = false;
                     if (currentChar == '.')
@@ -406,7 +406,7 @@ namespace ezrSquared.Main
                     numberString += currentChar;
                     advance();
 
-                    if (wasCharPeriod && (currentChar == null || !DIGITS.Contains((char)currentChar)))
+                    if (wasCharPeriod && (currentChar == null || !char.IsDigit((char)currentChar)))
                     {
                         numberString = numberString.Remove(numberString.Length - 1);
                         reverse();
@@ -460,7 +460,7 @@ namespace ezrSquared.Main
             {
                 parseResult result = statements();
                 if (result.error == null && currentToken.type != TOKENTYPE.ENDOFFILE)
-                    return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'if', 'count', 'while', 'try', 'function', 'special', 'object', 'include', 'invert', 'global', 'item', 'return', 'skip', 'stop', '!', '(', '[', '{', '+', '-' or '~'", currentToken.startPos, currentToken.endPos));
+                    return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'എങ്കിൽ', 'എണ്ണുക', 'എന്നാൽ', 'ശ്രമിക്കുക', 'പ്രവർത്തനം', 'പ്രത്യേകം', 'വസ്തു', 'ഉൾപ്പെടുന്നു', 'വിപരീതം', 'ലോകം', 'ഇനം', 'കൊടുക്കുക', 'തുടരുക', 'നിർത്തൂ', '!', '(', '[', '{', '+', '-' or '~'", currentToken.startPos, currentToken.endPos));
                 return result;
             }
 
@@ -497,9 +497,9 @@ namespace ezrSquared.Main
                 {
                     int newlineCount = skipNewlines(result);
                     if (newlineCount == 0 ||
-                        currentToken.matchString(TOKENTYPE.KEY, "end") ||
-                        currentToken.matchString(TOKENTYPE.KEY, "else") ||
-                        currentToken.matchString(TOKENTYPE.KEY, "error") ||
+                        currentToken.matchString(TOKENTYPE.KEY, "അവസാനം") ||
+                        currentToken.matchString(TOKENTYPE.KEY, "വേറെ") ||
+                        currentToken.matchString(TOKENTYPE.KEY, "പിശക്") ||
                         (usingQSyntax && (currentToken.matchString(TOKENTYPE.QEY, "f") ||
                         currentToken.matchString(TOKENTYPE.QEY, "l") ||
                         currentToken.matchString(TOKENTYPE.QEY, "e") ||
@@ -523,7 +523,7 @@ namespace ezrSquared.Main
                 parseResult result = new parseResult();
                 position startPos = currentToken.startPos.copy();
 
-                if (currentToken.matchString(TOKENTYPE.KEY, "return"))
+                if (currentToken.matchString(TOKENTYPE.KEY, "കൊടുക്കുക"))
                 {
                     result.registerAdvance();
                     advance();
@@ -537,14 +537,14 @@ namespace ezrSquared.Main
                     else
                         return result.success(new returnNode(expression_, startPos, currentToken.endPos.copy()));
                 }
-                else if (currentToken.matchString(TOKENTYPE.KEY, "skip"))
+                else if (currentToken.matchString(TOKENTYPE.KEY, "തുടരുക"))
                 {
                     result.registerAdvance();
                     advance();
 
                     return result.success(new skipNode(startPos, currentToken.startPos.copy()));
                 }
-                else if (currentToken.matchString(TOKENTYPE.KEY, "stop"))
+                else if (currentToken.matchString(TOKENTYPE.KEY, "നിർത്തൂ"))
                 {
                     result.registerAdvance();
                     advance();
@@ -554,7 +554,7 @@ namespace ezrSquared.Main
 
                 node expression = result.register(this.expression());
                 if (result.error != null)
-                    return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'if', 'count', 'while', 'try', 'function', 'special', 'object', 'include', 'invert', 'global', 'item', 'return', 'skip', 'stop', '!', '(', '[', '{', '+', '-' or '~'", currentToken.startPos, currentToken.endPos));
+                    return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'എങ്കിൽ', 'എണ്ണുക', 'എന്നാൽ', 'ശ്രമിക്കുക', 'പ്രവർത്തനം', 'പ്രത്യേകം', 'വസ്തു', 'ഉൾപ്പെടുന്നു', 'വിപരീതം', 'ലോകം', 'ഇനം', 'കൊടുക്കുക', 'തുടരുക', 'നിർത്തൂ', '!', '(', '[', '{', '+', '-' or '~'", currentToken.startPos, currentToken.endPos));
                 return result.success(expression);
             }
 
@@ -648,14 +648,14 @@ namespace ezrSquared.Main
                         usingQSyntax = false;
                 }
 
-                if (currentToken.matchString(TOKENTYPE.KEY, "global"))
+                if (currentToken.matchString(TOKENTYPE.KEY, "ലോകം"))
                 {
                     isGlobal = true;
                     result.registerAdvance();
                     advance();
                 }
 
-                if (currentToken.matchString(TOKENTYPE.KEY, "item"))
+                if (currentToken.matchString(TOKENTYPE.KEY, "ഇനം"))
                 {
                     result.registerAdvance();
                     advance();
@@ -708,9 +708,9 @@ namespace ezrSquared.Main
                 else if (isGlobal)
                     reverse(result.advanceCount);
 
-                node node = result.register(binaryOperation(compExpression, new TypeValuePair[] { new TypeValuePair(TOKENTYPE.KEY, "and"), new TypeValuePair(TOKENTYPE.KEY, "or") }));
+                node node = result.register(binaryOperation(compExpression, new TypeValuePair[] { new TypeValuePair(TOKENTYPE.KEY, "ഉം"), new TypeValuePair(TOKENTYPE.KEY, "അല്ലെങ്കിൽ") }));
                 if (result.error != null)
-                    return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'if', 'count', 'while', 'try', 'function', 'special', 'object', 'include', 'invert', 'global', 'item', '!', '(', '[', '{', '+', '-' or '~'", currentToken.startPos, currentToken.endPos));
+                    return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'എങ്കിൽ', 'എണ്ണുക', 'എന്നാൽ', 'ശ്രമിക്കുക', 'പ്രവർത്തനം', 'പ്രത്യേകം', 'വസ്തു', 'ഉൾപ്പെടുന്നു', 'വിപരീതം', 'ലോകം', 'ഇനം', '!', '(', '[', '{', '+', '-' or '~'", currentToken.startPos, currentToken.endPos));
                 return result.success(node);
             }
 
@@ -747,7 +747,7 @@ namespace ezrSquared.Main
                         usingQSyntax = false;
                 }
 
-                if (currentToken.matchString(TOKENTYPE.KEY, "invert"))
+                if (currentToken.matchString(TOKENTYPE.KEY, "വിപരീതം"))
                 {
                     token operatorToken = currentToken;
                     result.registerAdvance();
@@ -761,7 +761,7 @@ namespace ezrSquared.Main
 
                 node node = result.register(binaryOperation(bitOrExpression, new TypeValuePair[] { new TypeValuePair(TOKENTYPE.ISEQUAL), new TypeValuePair(TOKENTYPE.NOTEQUAL), new TypeValuePair(TOKENTYPE.LESSTHAN), new TypeValuePair(TOKENTYPE.GREATERTHAN), new TypeValuePair(TOKENTYPE.LESSTHANOREQUAL), new TypeValuePair(TOKENTYPE.GREATERTHANOREQUAL) }));
                 if (result.error != null)
-                    return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'if', 'count', 'while', 'try', 'function', 'special', 'object', 'include', 'invert', '!', '(', '[', '{', '+', '-' or '~'", currentToken.startPos, currentToken.endPos));
+                    return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'എങ്കിൽ', 'എണ്ണുക', 'എന്നാൽ', 'ശ്രമിക്കുക', 'പ്രവർത്തനം', 'പ്രത്യേകം', 'വസ്തു', 'ഉൾപ്പെടുന്നു', 'വിപരീതം', '!', '(', '[', '{', '+', '-' or '~'", currentToken.startPos, currentToken.endPos));
                 return result.success(node);
             }
 
@@ -799,7 +799,7 @@ namespace ezrSquared.Main
 
             private parseResult power() { return binaryOperation(inExpression, new TypeValuePair[] { new TypeValuePair(TOKENTYPE.POW) }); }
 
-            private parseResult inExpression() { return binaryOperation(objectCall, new TypeValuePair[] { new TypeValuePair(TOKENTYPE.KEY, "in") }); }
+            private parseResult inExpression() { return binaryOperation(objectCall, new TypeValuePair[] { new TypeValuePair(TOKENTYPE.KEY, "ൽ") }); }
 
             private parseResult objectCall() { return binaryOperation(call, new TypeValuePair[] { new TypeValuePair(TOKENTYPE.PERIOD) }, objectCall); }
 
@@ -826,7 +826,7 @@ namespace ezrSquared.Main
                     {
                         argNodes.Add(result.register(expression()));
                         if (result.error != null)
-                            return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'if', 'count', 'while', 'try', 'function', 'special', 'object', 'include', 'invert', 'global', 'item', '!', '(', '[', '{', '+', '-', '~' or ')'", currentToken.startPos, currentToken.endPos));
+                            return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'എങ്കിൽ', 'എണ്ണുക', 'എന്നാൽ', 'ശ്രമിക്കുക', 'പ്രവർത്തനം', 'പ്രത്യേകം', 'വസ്തു', 'ഉൾപ്പെടുന്നു', 'വിപരീതം', 'ലോകം', 'ഇനം', '!', '(', '[', '{', '+', '-', '~' or ')'", currentToken.startPos, currentToken.endPos));
 
                         while (currentToken.type == TOKENTYPE.COMMA)
                         {
@@ -933,69 +933,69 @@ namespace ezrSquared.Main
                     if (result.error != null) return result;
                     return result.success(dictionaryExpression);
                 }
-                else if (token.matchString(TOKENTYPE.KEY, "global"))
+                else if (token.matchString(TOKENTYPE.KEY, "ലോകം"))
                 {
                     result.registerAdvance();
                     advance();
 
                     if (currentToken.type != TOKENTYPE.ID && currentToken.type != TOKENTYPE.QEY)
-                        return result.failure(new invalidGrammarError("Expected 'item' or [IDENTIFIER]", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected 'ഇനം' or [IDENTIFIER]", currentToken.startPos, currentToken.endPos));
                     token varName = currentToken;
                     result.registerAdvance();
                     advance();
 
                     return result.success(new variableAccessNode(varName, true, startPos, currentToken.startPos.copy()));
                 }
-                else if (token.matchString(TOKENTYPE.KEY, "if"))
+                else if (token.matchString(TOKENTYPE.KEY, "എങ്കിൽ"))
                 {
                     node ifExpression = result.register(this.ifExpression());
                     if (result.error != null) return result;
                     return result.success(ifExpression);
                 }
-                else if (token.matchString(TOKENTYPE.KEY, "count"))
+                else if (token.matchString(TOKENTYPE.KEY, "എണ്ണുക"))
                 {
                     node countExpression = result.register(this.countExpression());
                     if (result.error != null) return result;
                     return result.success(countExpression);
                 }
-                else if (token.matchString(TOKENTYPE.KEY, "while"))
+                else if (token.matchString(TOKENTYPE.KEY, "എന്നാൽ"))
                 {
                     node whileExpression = result.register(this.whileExpression());
                     if (result.error != null) return result;
                     return result.success(whileExpression);
                 }
-                else if (token.matchString(TOKENTYPE.KEY, "try"))
+                else if (token.matchString(TOKENTYPE.KEY, "ശ്രമിക്കുക"))
                 {
                     node tryExpression = result.register(this.tryExpression());
                     if (result.error != null) return result;
                     return result.success(tryExpression);
                 }
-                else if (token.matchString(TOKENTYPE.KEY, "function"))
+                else if (token.matchString(TOKENTYPE.KEY, "പ്രവർത്തനം"))
                 {
                     node functionExpression = result.register(this.functionExpression());
                     if (result.error != null) return result;
                     return result.success(functionExpression);
                 }
-                else if (token.matchString(TOKENTYPE.KEY, "special"))
+                else if (token.matchString(TOKENTYPE.KEY, "പ്രത്യേകം"))
                 {
                     node specialExpression = result.register(this.specialExpression());
                     if (result.error != null) return result;
                     return result.success(specialExpression);
                 }
-                else if (token.matchString(TOKENTYPE.KEY, "object"))
+                else if (token.matchString(TOKENTYPE.KEY, "വസ്തു"))
                 {
                     node objectExpression = result.register(this.objectExpression());
                     if (result.error != null) return result;
                     return result.success(objectExpression);
                 }
-                else if (token.matchString(TOKENTYPE.KEY, "include"))
+                else if (token.matchString(TOKENTYPE.KEY, "ഉൾപ്പെടുന്നു"))
                 {
                     node includeExpression = result.register(this.includeExpression());
                     if (result.error != null) return result;
                     return result.success(includeExpression);
                 }
 
-                return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'if', 'count', 'while', 'try', 'function', 'special', 'object', 'include', '!', '(', '[' or '{'", currentToken.startPos, currentToken.endPos));
+                return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'എങ്കിൽ', 'എണ്ണുക', 'എന്നാൽ', 'ശ്രമിക്കുക', 'പ്രവർത്തനം', 'പ്രത്യേകം', 'വസ്തു', 'ഉൾപ്പെടുന്നു', '!', '(', '[' or '{'", currentToken.startPos, currentToken.endPos));
             }
 
             private parseResult arrayExpression()
@@ -1019,7 +1019,7 @@ namespace ezrSquared.Main
                     skipNewlines(result);
                     node firstElement = result.register(expression());
                     if (result.error != null)
-                        return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'if', 'count', 'while', 'try', 'function', 'special', 'object', 'include', 'invert', 'global', 'item', '!', '(', '[', '{', '+', '-', '~' or ')'", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'എങ്കിൽ', 'എണ്ണുക', 'എന്നാൽ', 'ശ്രമിക്കുക', 'പ്രവർത്തനം', 'പ്രത്യേകം', 'വസ്തു', 'ഉൾപ്പെടുന്നു', 'വിപരീതം', 'ലോകം', 'ഇനം', '!', '(', '[', '{', '+', '-', '~' or ')'", currentToken.startPos, currentToken.endPos));
 
                     List<node> nodeList = new List<node> { firstElement };
                     bool moreElements = true;
@@ -1045,7 +1045,7 @@ namespace ezrSquared.Main
                     {
                         if (moreElements)
                             return result.failure(new invalidGrammarError("Expected ',' or ')'", currentToken.startPos, currentToken.endPos));
-                        return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'if', 'count', 'while', 'try', 'function', 'special', 'object', 'include', 'invert', 'global', 'item', '!', '(', '[', '{', '+', '-', '~', or ')'", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'എങ്കിൽ', 'എണ്ണുക', 'എന്നാൽ', 'ശ്രമിക്കുക', 'പ്രവർത്തനം', 'പ്രത്യേകം', 'വസ്തു', 'ഉൾപ്പെടുന്നു', 'വിപരീതം', 'ലോകം', 'ഇനം', '!', '(', '[', '{', '+', '-', '~', or ')'", currentToken.startPos, currentToken.endPos));
                     }
 
                     elementNodes = nodeList.ToArray();
@@ -1077,7 +1077,7 @@ namespace ezrSquared.Main
                     skipNewlines(result);
                     node element = result.register(expression());
                     if (result.error != null)
-                        return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'if', 'count', 'while', 'try', 'function', 'special', 'object', 'include', 'invert', 'global', 'item', '!', '(', '[', '{', '+', '-', '~' or ']'", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected [INT], [FLOAT], [STRING], [CHARACTER-LIST], [IDENTIFIER], 'എങ്കിൽ', 'എണ്ണുക', 'എന്നാൽ', 'ശ്രമിക്കുക', 'പ്രവർത്തനം', 'പ്രത്യേകം', 'വസ്തു', 'ഉൾപ്പെടുന്നു', 'വിപരീതം', 'ലോകം', 'ഇനം', '!', '(', '[', '{', '+', '-', '~' or ']'", currentToken.startPos, currentToken.endPos));
 
                     List<node> nodeList = new List<node> { element };
                     skipNewlines(result);
@@ -1180,16 +1180,16 @@ namespace ezrSquared.Main
                 List<node[]> cases = new List<node[]>();
                 node? elseCase = null;
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "if"))
-                    return result.failure(new invalidGrammarError("Expected 'if'", currentToken.startPos, currentToken.endPos));
+                if (!currentToken.matchString(TOKENTYPE.KEY, "എങ്കിൽ"))
+                    return result.failure(new invalidGrammarError("Expected 'എങ്കിൽ'", currentToken.startPos, currentToken.endPos));
                 result.registerAdvance();
                 advance();
 
                 node condition = result.register(this.expression());
                 if (result.error != null) return result;
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "do"))
-                    return result.failure(new invalidGrammarError("Expected 'do'", currentToken.startPos, currentToken.endPos));
+                if (!currentToken.matchString(TOKENTYPE.KEY, "ചെയ്യുക"))
+                    return result.failure(new invalidGrammarError("Expected 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                 result.registerAdvance();
                 advance();
 
@@ -1203,23 +1203,23 @@ namespace ezrSquared.Main
                     if (result.error != null) return result;
                     cases.Add(new node[2] { condition, bodyNode });
 
-                    if (currentToken.matchString(TOKENTYPE.KEY, "end"))
+                    if (currentToken.matchString(TOKENTYPE.KEY, "അവസാനം"))
                     {
                         result.registerAdvance();
                         advance();
                     }
                     else
                     {
-                        if (!currentToken.matchString(TOKENTYPE.KEY, "else"))
-                            return result.failure(new invalidGrammarError("Expected 'else' or 'end'", currentToken.startPos, currentToken.endPos));
+                        if (!currentToken.matchString(TOKENTYPE.KEY, "വേറെ"))
+                            return result.failure(new invalidGrammarError("Expected 'വേറെ' or 'അവസാനം'", currentToken.startPos, currentToken.endPos));
 
-                        while (currentToken.matchString(TOKENTYPE.KEY, "else"))
+                        while (currentToken.matchString(TOKENTYPE.KEY, "വേറെ"))
                         {
                             result.registerAdvance();
                             advance();
 
                             bool isElseIf = false;
-                            if (currentToken.matchString(TOKENTYPE.KEY, "if"))
+                            if (currentToken.matchString(TOKENTYPE.KEY, "എങ്കിൽ"))
                             {
                                 result.registerAdvance();
                                 advance();
@@ -1229,11 +1229,11 @@ namespace ezrSquared.Main
                                 isElseIf = true;
                             }
 
-                            if (!currentToken.matchString(TOKENTYPE.KEY, "do"))
+                            if (!currentToken.matchString(TOKENTYPE.KEY, "ചെയ്യുക"))
                             {
                                 if (isElseIf)
-                                    return result.failure(new invalidGrammarError("Expected 'do'", currentToken.startPos, currentToken.endPos));
-                                return result.failure(new invalidGrammarError("Expected 'if' or 'do'", currentToken.startPos, currentToken.endPos));
+                                    return result.failure(new invalidGrammarError("Expected 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
+                                return result.failure(new invalidGrammarError("Expected 'എങ്കിൽ' or 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                             }
                             result.registerAdvance();
                             advance();
@@ -1252,11 +1252,11 @@ namespace ezrSquared.Main
                             }
                         }
 
-                        if (!currentToken.matchString(TOKENTYPE.KEY, "end"))
+                        if (!currentToken.matchString(TOKENTYPE.KEY, "അവസാനം"))
                         {
                             if (elseCase == null)
-                                return result.failure(new invalidGrammarError("Expected 'else' or 'end'", currentToken.startPos, currentToken.endPos));
-                            return result.failure(new invalidGrammarError("Expected 'end'", currentToken.startPos, currentToken.endPos));
+                                return result.failure(new invalidGrammarError("Expected 'വേറെ' or 'അവസാനം'", currentToken.startPos, currentToken.endPos));
+                            return result.failure(new invalidGrammarError("Expected 'അവസാനം'", currentToken.startPos, currentToken.endPos));
                         }
                         result.registerAdvance();
                         advance();
@@ -1269,13 +1269,13 @@ namespace ezrSquared.Main
                 if (result.error != null) return result;
                 cases.Add(new node[2] { condition, bodyNode });
 
-                while (currentToken.matchString(TOKENTYPE.KEY, "else"))
+                while (currentToken.matchString(TOKENTYPE.KEY, "വേറെ"))
                 {
                     result.registerAdvance();
                     advance();
 
                     bool isElseIf = false;
-                    if (currentToken.matchString(TOKENTYPE.KEY, "if"))
+                    if (currentToken.matchString(TOKENTYPE.KEY, "എങ്കിൽ"))
                     {
                         result.registerAdvance();
                         advance();
@@ -1285,11 +1285,11 @@ namespace ezrSquared.Main
                         isElseIf = true;
                     }
 
-                    if (!currentToken.matchString(TOKENTYPE.KEY, "do"))
+                    if (!currentToken.matchString(TOKENTYPE.KEY, "ചെയ്യുക"))
                     {
                         if (isElseIf)
-                            return result.failure(new invalidGrammarError("Expected 'do'", currentToken.startPos, currentToken.endPos));
-                        return result.failure(new invalidGrammarError("Expected 'if' or 'do'", currentToken.startPos, currentToken.endPos));
+                            return result.failure(new invalidGrammarError("Expected 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected 'എങ്കിൽ' or 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                     }
                     result.registerAdvance();
                     advance();
@@ -1316,13 +1316,13 @@ namespace ezrSquared.Main
                 parseResult result = new parseResult();
                 position startPos = currentToken.startPos.copy();
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "count"))
-                    return result.failure(new invalidGrammarError("Expected 'count'", currentToken.startPos, currentToken.endPos));
+                if (!currentToken.matchString(TOKENTYPE.KEY, "എണ്ണുക"))
+                    return result.failure(new invalidGrammarError("Expected 'എണ്ണുക'", currentToken.startPos, currentToken.endPos));
                 result.registerAdvance();
                 advance();
 
                 node? start = null;
-                if (currentToken.matchString(TOKENTYPE.KEY, "from"))
+                if (currentToken.matchString(TOKENTYPE.KEY, "നിന്ന്"))
                 {
                     result.registerAdvance();
                     advance();
@@ -1331,11 +1331,11 @@ namespace ezrSquared.Main
                     if (result.error != null) return result;
                 }
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "to"))
+                if (!currentToken.matchString(TOKENTYPE.KEY, "വരെ"))
                 {
                     if (start != null)
-                        return result.failure(new invalidGrammarError("Expected 'to'", currentToken.startPos, currentToken.endPos));
-                    return result.failure(new invalidGrammarError("Expected 'from' or 'to'", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected 'വരെ'", currentToken.startPos, currentToken.endPos));
+                    return result.failure(new invalidGrammarError("Expected 'നിന്ന്' or 'വരെ'", currentToken.startPos, currentToken.endPos));
                 }
                 result.registerAdvance();
                 advance();
@@ -1344,7 +1344,7 @@ namespace ezrSquared.Main
                 if (result.error != null) return result;
 
                 node? step = null;
-                if (currentToken.matchString(TOKENTYPE.KEY, "step"))
+                if (currentToken.matchString(TOKENTYPE.KEY, "ഘട്ടം"))
                 {
                     result.registerAdvance();
                     advance();
@@ -1354,7 +1354,7 @@ namespace ezrSquared.Main
                 }
 
                 token? variableName = null;
-                if (currentToken.matchString(TOKENTYPE.KEY, "as"))
+                if (currentToken.matchString(TOKENTYPE.KEY, "പോലെ"))
                 {
                     result.registerAdvance();
                     advance();
@@ -1366,13 +1366,13 @@ namespace ezrSquared.Main
                     advance();
                 }
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "do"))
+                if (!currentToken.matchString(TOKENTYPE.KEY, "ചെയ്യുക"))
                 {
                     if (step == null && variableName == null)
-                        return result.failure(new invalidGrammarError("Expected 'step', 'as' or 'do'", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected 'ഘട്ടം', 'പോലെ' or 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                     else if (variableName == null)
-                        return result.failure(new invalidGrammarError("Expected 'as' or 'do'", currentToken.startPos, currentToken.endPos));
-                    return result.failure(new invalidGrammarError("Expected 'do'", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected 'പോലെ' or 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
+                    return result.failure(new invalidGrammarError("Expected 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                 }
                 result.registerAdvance();
                 advance();
@@ -1386,8 +1386,8 @@ namespace ezrSquared.Main
                     bodyNode = result.register(statements());
                     if (result.error != null) return result;
 
-                    if (!currentToken.matchString(TOKENTYPE.KEY, "end"))
-                        return result.failure(new invalidGrammarError("Expected 'end'", currentToken.startPos, currentToken.endPos));
+                    if (!currentToken.matchString(TOKENTYPE.KEY, "അവസാനം"))
+                        return result.failure(new invalidGrammarError("Expected 'അവസാനം'", currentToken.startPos, currentToken.endPos));
                     result.registerAdvance();
                     advance();
 
@@ -1405,16 +1405,16 @@ namespace ezrSquared.Main
                 parseResult result = new parseResult();
                 position startPos = currentToken.startPos.copy();
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "while"))
-                    return result.failure(new invalidGrammarError("Expected 'while'", currentToken.startPos, currentToken.endPos));
+                if (!currentToken.matchString(TOKENTYPE.KEY, "എന്നാൽ"))
+                    return result.failure(new invalidGrammarError("Expected 'എന്നാൽ'", currentToken.startPos, currentToken.endPos));
                 result.registerAdvance();
                 advance();
 
                 node condition = result.register(this.expression());
                 if (result.error != null) return result;
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "do"))
-                    return result.failure(new invalidGrammarError("Expected 'do'", currentToken.startPos, currentToken.endPos));
+                if (!currentToken.matchString(TOKENTYPE.KEY, "ചെയ്യുക"))
+                    return result.failure(new invalidGrammarError("Expected 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                 result.registerAdvance();
                 advance();
 
@@ -1427,8 +1427,8 @@ namespace ezrSquared.Main
                     bodyNode = result.register(statements());
                     if (result.error != null) return result;
 
-                    if (!currentToken.matchString(TOKENTYPE.KEY, "end"))
-                        return result.failure(new invalidGrammarError("Expected 'end'", currentToken.startPos, currentToken.endPos));
+                    if (!currentToken.matchString(TOKENTYPE.KEY, "അവസാനം"))
+                        return result.failure(new invalidGrammarError("Expected 'അവസാനം'", currentToken.startPos, currentToken.endPos));
                     result.registerAdvance();
                     advance();
 
@@ -1447,13 +1447,13 @@ namespace ezrSquared.Main
                 position startPos = currentToken.startPos.copy();
                 List<object?[]> catches = new List<object?[]>();
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "try"))
-                    return result.failure(new invalidGrammarError("Expected 'try'", currentToken.startPos, currentToken.endPos));
+                if (!currentToken.matchString(TOKENTYPE.KEY, "ശ്രമിക്കുക"))
+                    return result.failure(new invalidGrammarError("Expected 'ശ്രമിക്കുക'", currentToken.startPos, currentToken.endPos));
                 result.registerAdvance();
                 advance();
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "do"))
-                    return result.failure(new invalidGrammarError("Expected 'do'", currentToken.startPos, currentToken.endPos));
+                if (!currentToken.matchString(TOKENTYPE.KEY, "ചെയ്യുക"))
+                    return result.failure(new invalidGrammarError("Expected 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                 result.registerAdvance();
                 advance();
 
@@ -1469,7 +1469,7 @@ namespace ezrSquared.Main
                     int emptyCatches_ = 0;
                     int emptyCatchIndex_ = -1;
 
-                    while (currentToken.matchString(TOKENTYPE.KEY, "error"))
+                    while (currentToken.matchString(TOKENTYPE.KEY, "പിശക്"))
                     {
                         result.registerAdvance();
                         advance();
@@ -1490,7 +1490,7 @@ namespace ezrSquared.Main
                             advance();
                         }
 
-                        if (currentToken.matchString(TOKENTYPE.KEY, "as"))
+                        if (currentToken.matchString(TOKENTYPE.KEY, "പോലെ"))
                         {
                             result.registerAdvance();
                             advance();
@@ -1503,13 +1503,13 @@ namespace ezrSquared.Main
                             advance();
                         }
 
-                        if (!currentToken.matchString(TOKENTYPE.KEY, "do"))
+                        if (!currentToken.matchString(TOKENTYPE.KEY, "ചെയ്യുക"))
                         {
                             if (error == null && varName == null)
-                                return result.failure(new invalidGrammarError("Expected [STRING], [CHARACTER-LIST], [IDENTIFIER], 'as' or 'do'", currentToken.startPos, currentToken.endPos));
+                                return result.failure(new invalidGrammarError("Expected [STRING], [CHARACTER-LIST], [IDENTIFIER], 'പോലെ' or 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                             else if (varName == null)
-                                return result.failure(new invalidGrammarError("Expected 'as' or 'do'", currentToken.startPos, currentToken.endPos));
-                            return result.failure(new invalidGrammarError("Expected 'do'", currentToken.startPos, currentToken.endPos));
+                                return result.failure(new invalidGrammarError("Expected 'പോലെ' or 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
+                            return result.failure(new invalidGrammarError("Expected 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                         }
                         result.registerAdvance();
                         advance();
@@ -1529,13 +1529,13 @@ namespace ezrSquared.Main
                     if (emptyCatches_ > 0)
                     {
                         if (emptyCatches_ > 1)
-                            return result.failure(new invalidGrammarError("There cannot be more than one empty 'error' statements", startPos, currentToken.endPos));
+                            return result.failure(new invalidGrammarError("There cannot be more than one empty 'പിശക്' statements", startPos, currentToken.endPos));
                         if (emptyCatchIndex_ != catches.Count - 1)
-                            return result.failure(new invalidGrammarError("Empty 'error' statements should always be declared last", startPos, currentToken.endPos));
+                            return result.failure(new invalidGrammarError("Empty 'പിശക്' statements should always be declared last", startPos, currentToken.endPos));
                     }
 
-                    if (!currentToken.matchString(TOKENTYPE.KEY, "end"))
-                        return result.failure(new invalidGrammarError("Expected 'end'", currentToken.startPos, currentToken.endPos));
+                    if (!currentToken.matchString(TOKENTYPE.KEY, "അവസാനം"))
+                        return result.failure(new invalidGrammarError("Expected 'അവസാനം'", currentToken.startPos, currentToken.endPos));
                     result.registerAdvance();
                     advance();
 
@@ -1548,7 +1548,7 @@ namespace ezrSquared.Main
                 int emptyCatches = 0;
                 int emptyCatchIndex = -1;
 
-                while (currentToken.matchString(TOKENTYPE.KEY, "error"))
+                while (currentToken.matchString(TOKENTYPE.KEY, "പിശക്"))
                 {
                     result.registerAdvance();
                     advance();
@@ -1569,7 +1569,7 @@ namespace ezrSquared.Main
                         advance();
                     }
 
-                    if (currentToken.matchString(TOKENTYPE.KEY, "as"))
+                    if (currentToken.matchString(TOKENTYPE.KEY, "പോലെ"))
                     {
                         result.registerAdvance();
                         advance();
@@ -1582,13 +1582,13 @@ namespace ezrSquared.Main
                         advance();
                     }
 
-                    if (!currentToken.matchString(TOKENTYPE.KEY, "do"))
+                    if (!currentToken.matchString(TOKENTYPE.KEY, "ചെയ്യുക"))
                     {
                         if (error == null && varName == null)
-                            return result.failure(new invalidGrammarError("Expected [STRING], [CHARACTER-LIST], [IDENTIFIER], 'as' or 'do'", currentToken.startPos, currentToken.endPos));
+                            return result.failure(new invalidGrammarError("Expected [STRING], [CHARACTER-LIST], [IDENTIFIER], 'പോലെ' or 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                         else if (varName == null)
-                            return result.failure(new invalidGrammarError("Expected 'as' or 'do'", currentToken.startPos, currentToken.endPos));
-                        return result.failure(new invalidGrammarError("Expected 'do'", currentToken.startPos, currentToken.endPos));
+                            return result.failure(new invalidGrammarError("Expected 'പോലെ' or 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                     }
                     result.registerAdvance();
                     advance();
@@ -1608,9 +1608,9 @@ namespace ezrSquared.Main
                 if (emptyCatches > 0)
                 {
                     if (emptyCatches > 1)
-                        return result.failure(new invalidGrammarError("There cannot be more than one empty 'error' statements", startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("There cannot be more than one empty 'പിശക്' statements", startPos, currentToken.endPos));
                     if (emptyCatchIndex != catches.Count - 1)
-                        return result.failure(new invalidGrammarError("Empty 'error' statements should always be declared last", startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Empty 'പിശക്' statements should always be declared last", startPos, currentToken.endPos));
                 }
 
                 return result.success(new tryNode(bodyNode, catches.ToArray(), false, startPos, currentToken.endPos.copy()));
@@ -1621,8 +1621,8 @@ namespace ezrSquared.Main
                 parseResult result = new parseResult();
                 position startPos = currentToken.startPos.copy();
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "function"))
-                    return result.failure(new invalidGrammarError("Expected 'function'", currentToken.startPos, currentToken.endPos));
+                if (!currentToken.matchString(TOKENTYPE.KEY, "പ്രവർത്തനം"))
+                    return result.failure(new invalidGrammarError("Expected 'പ്രവർത്തനം'", currentToken.startPos, currentToken.endPos));
                 result.registerAdvance();
                 advance();
 
@@ -1635,7 +1635,7 @@ namespace ezrSquared.Main
                 }
 
                 List<token> argNames = new List<token>();
-                if (currentToken.matchString(TOKENTYPE.KEY, "with"))
+                if (currentToken.matchString(TOKENTYPE.KEY, "കൂടെ"))
                 {
                     result.registerAdvance();
                     advance();
@@ -1659,13 +1659,13 @@ namespace ezrSquared.Main
                     }
                 }
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "do"))
+                if (!currentToken.matchString(TOKENTYPE.KEY, "ചെയ്യുക"))
                 {
                     if (argNames.Count == 0 && varName == null)
-                        return result.failure(new invalidGrammarError("Expected [IDENTIFIER], 'with' or 'do'", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected [IDENTIFIER], 'കൂടെ' or 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                     else if (argNames.Count == 0)
-                        return result.failure(new invalidGrammarError("Expected 'with' or 'do'", currentToken.startPos, currentToken.endPos));
-                    return result.failure(new invalidGrammarError("Expected 'do'", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected 'കൂടെ' or 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
+                    return result.failure(new invalidGrammarError("Expected 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                 }
                 result.registerAdvance();
                 advance();
@@ -1676,8 +1676,8 @@ namespace ezrSquared.Main
                     bodyNode = result.register(statements());
                     if (result.error != null) return result;
 
-                    if (!currentToken.matchString(TOKENTYPE.KEY, "end"))
-                        return result.failure(new invalidGrammarError("Expected 'end'", currentToken.startPos, currentToken.endPos));
+                    if (!currentToken.matchString(TOKENTYPE.KEY, "അവസാനം"))
+                        return result.failure(new invalidGrammarError("Expected 'അവസാനം'", currentToken.startPos, currentToken.endPos));
                     result.registerAdvance();
                     advance();
 
@@ -1694,8 +1694,8 @@ namespace ezrSquared.Main
                 parseResult result = new parseResult();
                 position startPos = currentToken.startPos.copy();
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "special"))
-                    return result.failure(new invalidGrammarError("Expected 'special'", currentToken.startPos, currentToken.endPos));
+                if (!currentToken.matchString(TOKENTYPE.KEY, "പ്രത്യേകം"))
+                    return result.failure(new invalidGrammarError("Expected 'പ്രത്യേകം'", currentToken.startPos, currentToken.endPos));
                 result.registerAdvance();
                 advance();
 
@@ -1705,8 +1705,8 @@ namespace ezrSquared.Main
                 result.registerAdvance();
                 advance();
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "do"))
-                    return result.failure(new invalidGrammarError("Expected 'do'", currentToken.startPos, currentToken.endPos));
+                if (!currentToken.matchString(TOKENTYPE.KEY, "ചെയ്യുക"))
+                    return result.failure(new invalidGrammarError("Expected 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                 result.registerAdvance();
                 advance();
 
@@ -1716,8 +1716,8 @@ namespace ezrSquared.Main
                     bodyNode = result.register(statements());
                     if (result.error != null) return result;
 
-                    if (!currentToken.matchString(TOKENTYPE.KEY, "end"))
-                        return result.failure(new invalidGrammarError("Expected 'end'", currentToken.startPos, currentToken.endPos));
+                    if (!currentToken.matchString(TOKENTYPE.KEY, "അവസാനം"))
+                        return result.failure(new invalidGrammarError("Expected 'അവസാനം'", currentToken.startPos, currentToken.endPos));
                     result.registerAdvance();
                     advance();
 
@@ -1735,8 +1735,8 @@ namespace ezrSquared.Main
                 parseResult result = new parseResult();
                 position startPos = currentToken.startPos.copy();
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "object"))
-                    return result.failure(new invalidGrammarError("Expected 'object'", currentToken.startPos, currentToken.endPos));
+                if (!currentToken.matchString(TOKENTYPE.KEY, "വസ്തു"))
+                    return result.failure(new invalidGrammarError("Expected 'വസ്തു'", currentToken.startPos, currentToken.endPos));
                 result.registerAdvance();
                 advance();
 
@@ -1767,7 +1767,7 @@ namespace ezrSquared.Main
                 }
 
                 List<token> argNames = new List<token>();
-                if (currentToken.matchString(TOKENTYPE.KEY, "with"))
+                if (currentToken.matchString(TOKENTYPE.KEY, "കൂടെ"))
                 {
                     result.registerAdvance();
                     advance();
@@ -1791,13 +1791,13 @@ namespace ezrSquared.Main
                     }
                 }
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "do"))
+                if (!currentToken.matchString(TOKENTYPE.KEY, "ചെയ്യുക"))
                 {
                     if (inheritFrom == null && argNames.Count == 0)
-                        return result.failure(new invalidGrammarError("Expected [IDENTIFIER], 'with' or 'do'", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected [IDENTIFIER], 'കൂടെ' or 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                     if (argNames.Count == 0)
-                        return result.failure(new invalidGrammarError("Expected 'with' or 'do'", currentToken.startPos, currentToken.endPos));
-                    return result.failure(new invalidGrammarError("Expected ',' or 'do'", currentToken.startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Expected 'കൂടെ' or 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
+                    return result.failure(new invalidGrammarError("Expected ',' or 'ചെയ്യുക'", currentToken.startPos, currentToken.endPos));
                 }
                 result.registerAdvance();
                 advance();
@@ -1808,8 +1808,8 @@ namespace ezrSquared.Main
                     bodyNode = result.register(statements());
                     if (result.error != null) return result;
 
-                    if (!currentToken.matchString(TOKENTYPE.KEY, "end"))
-                        return result.failure(new invalidGrammarError("Expected 'end'", currentToken.startPos, currentToken.endPos));
+                    if (!currentToken.matchString(TOKENTYPE.KEY, "അവസാനം"))
+                        return result.failure(new invalidGrammarError("Expected 'അവസാനം'", currentToken.startPos, currentToken.endPos));
                     result.registerAdvance();
                     advance();
 
@@ -1826,8 +1826,8 @@ namespace ezrSquared.Main
                 parseResult result = new parseResult();
                 position startPos = currentToken.startPos.copy();
 
-                if (!currentToken.matchString(TOKENTYPE.KEY, "include"))
-                    return result.failure(new invalidGrammarError("Expected 'include'", currentToken.startPos, currentToken.endPos));
+                if (!currentToken.matchString(TOKENTYPE.KEY, "ഉൾപ്പെടുന്നു"))
+                    return result.failure(new invalidGrammarError("Expected 'ഉൾപ്പെടുന്നു'", currentToken.startPos, currentToken.endPos));
                 result.registerAdvance();
                 advance();
 
@@ -1845,7 +1845,7 @@ namespace ezrSquared.Main
                 advance();
 
                 token? nickname = null;
-                if (currentToken.matchString(TOKENTYPE.KEY, "as"))
+                if (currentToken.matchString(TOKENTYPE.KEY, "പോലെ"))
                 {
                     result.registerAdvance();
                     advance();
@@ -2267,9 +2267,9 @@ namespace ezrSquared.Main
                     if (emptyCatches_ > 0)
                     {
                         if (emptyCatches_ > 1)
-                            return result.failure(new invalidGrammarError("There cannot be more than one empty 'error' statements", startPos, currentToken.endPos));
+                            return result.failure(new invalidGrammarError("There cannot be more than one empty 'പിശക്' statements", startPos, currentToken.endPos));
                         if (emptyCatchIndex_ != catches.Count - 1)
-                            return result.failure(new invalidGrammarError("Empty 'error' statements should always be declared last", startPos, currentToken.endPos));
+                            return result.failure(new invalidGrammarError("Empty 'പിശക്' statements should always be declared last", startPos, currentToken.endPos));
                     }
 
                     if (!currentToken.matchString(TOKENTYPE.QEY, "s"))
@@ -2345,9 +2345,9 @@ namespace ezrSquared.Main
                 if (emptyCatches > 0)
                 {
                     if (emptyCatches > 1)
-                        return result.failure(new invalidGrammarError("There cannot be more than one empty 'error' statements", startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("There cannot be more than one empty 'പിശക്' statements", startPos, currentToken.endPos));
                     if (emptyCatchIndex != catches.Count - 1)
-                        return result.failure(new invalidGrammarError("Empty 'error' statements should always be declared last", startPos, currentToken.endPos));
+                        return result.failure(new invalidGrammarError("Empty 'പിശക്' statements should always be declared last", startPos, currentToken.endPos));
                 }
 
                 return result.success(new tryNode(bodyNode, catches.ToArray(), false, startPos, currentToken.endPos.copy()));
@@ -2962,12 +2962,12 @@ namespace ezrSquared.Main
                     res = left.compareLessThanOrEqual(right, out err);
                 else if (node.operatorToken.type == TOKENTYPE.GREATERTHANOREQUAL)
                     res = left.compareGreaterThanOrEqual(right, out err);
-                else if (node.operatorToken.matchString(TOKENTYPE.KEY, "and"))
+                else if (node.operatorToken.matchString(TOKENTYPE.KEY, "ഉം"))
                     res = left.compareAnd(right, out err);
-                else if (node.operatorToken.matchString(TOKENTYPE.KEY, "or"))
+                else if (node.operatorToken.matchString(TOKENTYPE.KEY, "അല്ലെങ്കിൽ"))
                     res = left.compareOr(right, out err);
 
-                else if (node.operatorToken.matchString(TOKENTYPE.KEY, "in"))
+                else if (node.operatorToken.matchString(TOKENTYPE.KEY, "ൽ"))
                     res = left.checkIn(right, out err);
 
                 if (err != null) return result.failure(err);
@@ -2990,7 +2990,7 @@ namespace ezrSquared.Main
                 else if (node.operatorToken.type == TOKENTYPE.PLUS)
                     res = variable.multedBy(new integer(1), out err);
 
-                else if (node.operatorToken.matchString(TOKENTYPE.KEY, "invert") || node.operatorToken.matchString(TOKENTYPE.KEY, "v"))
+                else if (node.operatorToken.matchString(TOKENTYPE.KEY, "വിപരീതം") || node.operatorToken.matchString(TOKENTYPE.KEY, "v"))
                     res = variable.invert(out err);
 
                 if (err != null) return result.failure(err);
@@ -3337,7 +3337,7 @@ namespace ezrSquared.Main
                 string formattedFileName = "";
                 for (int i = 0; i < name.Length; i++)
                 {
-                    if (!ALPHANUM_UNDERSCORE.Contains(name[i]))
+                    if (!char.IsLetterOrDigit(name[i]) && !ALPHABET.Contains(name[i]) && name[i] != '_')
                         formattedFileName += '_';
                     else
                         formattedFileName += name[i];
@@ -3423,36 +3423,36 @@ namespace ezrSquared.Main
                 if (_globalPredefinedContext.symbolTable == null)
                 {
                     symbolTable predefinedSymbolTable = new symbolTable();
-                    predefinedSymbolTable.set("nothing", new nothing());
-                    predefinedSymbolTable.set("true", new boolean(true));
-                    predefinedSymbolTable.set("false", new boolean(false));
+                    predefinedSymbolTable.set("ഒന്നുമില്ല", new nothing());
+                    predefinedSymbolTable.set("സത്യം", new boolean(true));
+                    predefinedSymbolTable.set("തെറ്റ്", new boolean(false));
 
-                    predefinedSymbolTable.set("version__", new @string(VERSION));
+                    predefinedSymbolTable.set("പതിപ്പ്__", new @string(VERSION));
 
-                    predefinedSymbolTable.set("err_any", new @string(RT_DEFAULT));
-                    predefinedSymbolTable.set("err_illegalop", new @string(RT_ILLEGALOP));
-                    predefinedSymbolTable.set("err_undefined", new @string(RT_UNDEFINED));
-                    predefinedSymbolTable.set("err_key", new @string(RT_KEY));
-                    predefinedSymbolTable.set("err_index", new @string(RT_INDEX));
-                    predefinedSymbolTable.set("err_args", new @string(RT_ARGS));
-                    predefinedSymbolTable.set("err_type", new @string(RT_TYPE));
-                    predefinedSymbolTable.set("err_math", new @string(RT_MATH));
-                    predefinedSymbolTable.set("err_run", new @string(RT_RUN));
-                    predefinedSymbolTable.set("err_io", new @string(RT_IO));
-                    predefinedSymbolTable.set("err_overflow", new @string(RT_OVERFLOW));
-                    predefinedSymbolTable.set("err_length", new @string(RT_LEN));
+                    predefinedSymbolTable.set($"{RT_DEFAULT}_പിശക്", new @string(RT_DEFAULT));
+                    predefinedSymbolTable.set($"{RT_ILLEGALOP}_പിശക്", new @string(RT_ILLEGALOP));
+                    predefinedSymbolTable.set($"{RT_UNDEFINED}_പിശക്", new @string(RT_UNDEFINED));
+                    predefinedSymbolTable.set($"{RT_KEY}_പിശക്", new @string(RT_KEY));
+                    predefinedSymbolTable.set($"{RT_INDEX}_പിശക്", new @string(RT_INDEX));
+                    predefinedSymbolTable.set($"{RT_ARGS}_പിശക്", new @string(RT_ARGS));
+                    predefinedSymbolTable.set($"{RT_TYPE}_പിശക്", new @string(RT_TYPE));
+                    predefinedSymbolTable.set($"{RT_MATH}_പിശക്", new @string(RT_MATH));
+                    predefinedSymbolTable.set($"{RT_RUN}_പിശക്", new @string(RT_RUN));
+                    predefinedSymbolTable.set($"{RT_IO}_പിശക്", new @string(RT_IO));
+                    predefinedSymbolTable.set($"{RT_OVERFLOW}_പിശക്", new @string(RT_OVERFLOW));
+                    predefinedSymbolTable.set($"{RT_LEN}_പിശക്", new @string(RT_LEN));
 
                     position pos = new position(0, 0, 0, "<main>", "");
-                    predefinedSymbolTable.set("file", waitTask(new @file().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
-                    predefinedSymbolTable.set("folder", waitTask(new folder().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
-                    predefinedSymbolTable.set("path", waitTask(new path().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("പ്രമാണം", waitTask(new @file().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("മടക്കിയകടലാസ്", waitTask(new folder().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("പാത", waitTask(new path().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
 
-                    predefinedSymbolTable.set("integer", waitTask(new integer_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
-                    predefinedSymbolTable.set("float", waitTask(new float_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
-                    predefinedSymbolTable.set("string", waitTask(new string_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
-                    predefinedSymbolTable.set("character_list", waitTask(new character_list_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("പൂർണ്ണസംഖ്യ", waitTask(new integer_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("ദശാംശം", waitTask(new float_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("വാചകം", waitTask(new string_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("അക്ഷര_പട്ടിക", waitTask(new character_list_class().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
 
-                    predefinedSymbolTable.set("random", waitTask(new random().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
+                    predefinedSymbolTable.set("ആകസ്‌മികത", waitTask(new random().setPosition(pos, pos).setContext(_globalPredefinedContext).execute(new item[0])).value);
 
                     _globalPredefinedContext.symbolTable = predefinedSymbolTable;
                 }
